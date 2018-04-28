@@ -1,0 +1,3 @@
+[submodule "dependencies/mettle"]
+	path = dependencies/mettle
+	url = git@github.com:JohnGalbraith/mettle.git
