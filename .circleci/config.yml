@@ -1,13 +1,52 @@
-version: 2
+version: 2.0
+
 jobs:
-  build:
+  build_gcc:
     docker:
-      - image: debian:stretch
+      - image: cadenzio/cpp-build:0.0.1
     steps:
       - checkout
+      - run: 
+          name: Submodule Checkout
+          command: git submodule sync && git submodule update --init
       - run:
-          name: Greeting
-          command: cmake --version
+          name: CMake
+          command: cmake . -DCMAKE_BUILD_TYPE=Release -G Ninja
       - run:
-          name: Print the Current Time
-          command: date
+          name: Build
+          command: ninja
+      - run:
+          name: Unit Test
+          command: bin/mettle bin/ut.*
+      - run:
+          name: Generate Coverage Report
+          command: ninja cover.value
+      - run: 
+          name: Upload Coverage Report
+          command: bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c8
+  build_clang:
+    docker:
+      - image: cadenzio/cpp-build:0.0.1
+    steps:
+      - checkout
+      - run: 
+          name: Submodule Checkout
+          command: git submodule sync && git submodule update --init
+      - run:
+          name: CMake
+          command: cmake . -DCMAKE_BUILD_TYPE=Release -G Ninja
+          environment:
+            CXX: clang++-6.0
+            CC: clang-6.0
+      - run:
+          name: Build
+          command: ninja
+      - run:
+          name: Unit Test
+          command: bin/mettle bin/ut.*
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build_gcc
+      - build_clang
