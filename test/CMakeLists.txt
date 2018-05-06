@@ -1,3 +1,5 @@
+add_custom_target(coverage)
+
 foreach(component IN ITEMS pitch value)
     add_executable (${component} "test_${component}.cpp")
     target_link_libraries(${component} lilyparse Mettle rapidcheck Threads::Threads)
@@ -10,6 +12,7 @@ foreach(component IN ITEMS pitch value)
 		NAME "cover.${component}" 
 		EXECUTABLE ${CMAKE_BINARY_DIR}/bin/ut.${component} 
 		DEPENDENCIES ${component})
+	add_dependencies( coverage "cover.${component}" )
      endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 endforeach()
