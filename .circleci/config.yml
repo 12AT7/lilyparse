@@ -11,7 +11,7 @@ jobs:
           command: git submodule sync && git submodule update --init
       - run:
           name: CMake
-          command: cmake . -DCMAKE_BUILD_TYPE=Release -G Ninja
+          command: cmake . -DCMAKE_BUILD_TYPE=Debug -G Ninja
       - run:
           name: Build
           command: ninja

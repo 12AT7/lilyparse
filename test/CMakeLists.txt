@@ -4,8 +4,12 @@ foreach(component IN ITEMS pitch value)
     set_target_properties(${component} PROPERTIES PREFIX "ut.")
     add_test(NAME ${component} 
 	     COMMAND ${CMAKE_BINARY_DIR}/bin/ut.${component} -o verbose)
-    setup_target_for_coverage(
-	     NAME "cover.${component}" 
-	     EXECUTABLE ${CMAKE_BINARY_DIR}/bin/ut.${component} 
-	     DEPENDENCIES ${component})
+
+     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    	setup_target_for_coverage(
+		NAME "cover.${component}" 
+		EXECUTABLE ${CMAKE_BINARY_DIR}/bin/ut.${component} 
+		DEPENDENCIES ${component})
+     endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+
 endforeach()
