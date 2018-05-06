@@ -17,7 +17,7 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: bin/mettle bin/ut.*
+          command: bin/mettle --no-subproc bin/ut.*
       - run:
           name: Generate Coverage Report
           command: ninja cover.value
