@@ -86,7 +86,7 @@ staffline pitch::get_staffline() const
 
     static const octave middle_C(4);
     return staffline(line.at(pitchclass_) +
-                     (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
+        (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
 };
 
 std::ostream &operator<<(std::ostream &os, const pitch &p)

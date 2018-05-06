@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(lilyparse CXX)
+
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories("${CMAKE_SOURCE_DIR}/include")
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+option(build_shared_libs "build lilyparse as a shared library" ON)
+set(BUILD_SHARED_LIBS ${build_shared_libs})
 
-include(CodeCoverage)
+include(cmake/CodeCoverage.cmake)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 APPEND_COVERAGE_COMPILER_FLAGS()
+
 set(COVERAGE_EXCLUDES 
 	'${CMAKE_SOURCE_DIR}/dependencies/*' 
 	'/usr/include/*'
@@ -15,6 +18,9 @@ set(COVERAGE_EXCLUDES
 
 find_package(Boost COMPONENTS )
 find_package(Threads)
+find_program(CLANG_TIDY "clang-tidy" REQUIRED)
+
+include_directories("${CMAKE_SOURCE_DIR}/include")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=5 -fcolor-diagnostics")
