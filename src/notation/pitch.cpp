@@ -22,16 +22,17 @@ static const std::map<pitchclass, const char *> pitchclass_names = {
 std::string to_string(pitchclass p)
 {
     auto it = pitchclass_names.find(p);
-    if (it == pitchclass_names.end())
+    if (it == pitchclass_names.end()) {
         throw exception(R"(cannot print invalid pitchclass {})",
             static_cast<std::uint8_t>(p));
+    }
     return it->second;
 }
 
 std::string to_string(const pitch &p)
 {
     std::string lily = to_string(p.pitchclass_);
-    std::uint8_t rawoctave = static_cast<std::uint8_t>(p.octave_);
+    auto rawoctave = static_cast<std::uint8_t>(p.octave_);
     std::copy_n(",,,,", 4 - rawoctave, std::back_inserter(lily));
     std::copy_n("''''", rawoctave - 4, std::back_inserter(lily));
     return lily;
@@ -39,8 +40,9 @@ std::string to_string(const pitch &p)
 
 valid_pitchclass::valid_pitchclass()
 {
-    for (auto [key, value] : pitchclass_names)
+    for (auto [key, value] : pitchclass_names) {
         emplace(key);
+    }
 }
 
 midi::pitch pitch::get_midi() const
@@ -96,8 +98,9 @@ std::ostream &operator<<(std::ostream &os, const pitch &p)
 
 bool operator<(const pitch &p1, const pitch &p2)
 {
-    if (p1.octave_ != p2.octave_)
+    if (p1.octave_ != p2.octave_) {
         return p1.octave_ < p2.octave_;
+    }
     return p1.pitchclass_ < p2.pitchclass_;
 }
 
