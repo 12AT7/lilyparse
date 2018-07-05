@@ -6,9 +6,11 @@ set(CMAKE_CXX_STANDARD 17)
 option(build_shared_libs "build lilyparse as a shared library" ON)
 set(BUILD_SHARED_LIBS ${build_shared_libs})
 
-include(cmake/CodeCoverage.cmake)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-APPEND_COVERAGE_COMPILER_FLAGS()
+if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
+    include(cmake/CodeCoverage.cmake)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+endif (CMAKE_BUILD_TYPE EQUAL "DEBUG")
 
 set(COVERAGE_EXCLUDES 
 	'${CMAKE_SOURCE_DIR}/dependencies/*' 
@@ -32,6 +34,7 @@ set(BUILD_SHARED_LIBS TRUE)  # Consumed by fmt
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 enable_testing()
+
 add_subdirectory(dependencies/mettle)
 add_subdirectory(dependencies/type_safe)
 add_subdirectory(dependencies/fmt)
