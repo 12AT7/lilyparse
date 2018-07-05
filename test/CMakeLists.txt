@@ -2,7 +2,7 @@ add_custom_target(coverage)
 
 foreach(component IN ITEMS pitch value)
     add_executable (${component} "test_${component}.cpp")
-    target_link_libraries(${component} lilyparse Mettle rapidcheck Threads::Threads)
+    target_link_libraries(${component} lilyparse libmettle rapidcheck Threads::Threads)
     set_target_properties(${component} PROPERTIES PREFIX "ut.")
     add_test(NAME ${component} 
 	     COMMAND ${CMAKE_BINARY_DIR}/bin/ut.${component} -o verbose)
