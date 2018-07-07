@@ -18,7 +18,9 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: python3 dependencies/mettle/scripts/mettle_junit.py
+          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.*
+      - store_test_results:
+          path: reports
       - run:
           name: Generate Coverage Report
           command: ninja cover.value
