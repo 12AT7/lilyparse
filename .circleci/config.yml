@@ -18,9 +18,11 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.*
+          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts
+      - store_artifacts:
+          path: artifacts
       - store_test_results:
-          path: reports
+          path: artifacts
       - run:
           name: Generate Coverage Report
           command: ninja cover.value
@@ -46,7 +48,11 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: python3 dependencies/mettle/scripts/mettle_junit.py
+          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts
+      - store_artifacts:
+          path: artifacts
+      - store_test_results:
+          path: artifacts
 workflows:
   version: 2
   build_and_test:
