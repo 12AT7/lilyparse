@@ -18,10 +18,10 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts
+          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts/test_results
       - run:
           name: Generate Test Report
-          command: /allure-2.6.0/bin/allure generate artifacts -o artifacts
+          command: /allure-2.6.0/bin/allure generate artifacts/test_results -o artifacts/test_reports
       - store_artifacts:
           path: artifacts
       - store_test_results:
@@ -51,10 +51,10 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts
+          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts/test_results
       - run:
           name: Generate Test Report
-          command: /allure-2.6.0/bin/allure generate artifacts -o artifacts
+          command: /allure-2.6.0/bin/allure generate artifacts/test_results -o artifacts/test_reports
       - store_artifacts:
           path: artifacts
       - store_test_results:
