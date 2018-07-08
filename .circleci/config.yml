@@ -19,6 +19,9 @@ jobs:
       - run:
           name: Unit Test
           command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts
+      - run:
+          name: Generate Test Report
+          command: /allure-2.6.0/bin/allure generate artifacts -o artifacts
       - store_artifacts:
           path: artifacts
       - store_test_results:
@@ -49,6 +52,9 @@ jobs:
       - run:
           name: Unit Test
           command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts
+      - run:
+          name: Generate Test Report
+          command: /allure-2.6.0/bin/allure generate artifacts -o artifacts
       - store_artifacts:
           path: artifacts
       - store_test_results:
