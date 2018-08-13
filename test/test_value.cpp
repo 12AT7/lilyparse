@@ -2,57 +2,73 @@
 #include <lilyparse/rapidcheck/mettle.hpp>
 
 #include <lilyparse/value.hpp>
+#include <lilyparse/duration.hpp>
 
-using namespace lilyparse;
+#include <numeric>
 
-mettle::property_suite<> suite("value", [](auto &_) {
-    using namespace mettle;
+namespace snm = lilyparse;
 
-    _.test("print valid values", []() {
-        std::stringstream buffer;
-        std::copy(all_values.begin(), all_values.end(),
-            std::ostream_iterator<value>(buffer, " "));
-        expect(buffer.str(), equal_to("1 2 4 8 16 32 64 "
-                                      "1. 2. 4. 8. 16. 32. "
-                                      "1.. 2.. 4.. 8.. 16.. "));
+namespace snm_test {
+
+// Need a duration type that can be arbitrarily constructed, for tests
+struct duration : snm::duration 
+{
+    duration(std::uint32_t num, std::uint32_t den) : snm::duration(num, den) {}
+    using snm::duration::duration;
+};
+
+} // snm_test
+
+namespace lilyparse {
+
+std::string to_printable(duration const& value) 
+{
+    static snm::string_generator<duration> generate;
+    return generate(value);
+}
+
+} // snm
+
+using mettle::equal_to;
+using mettle::expect;
+
+mettle::suite<> suite("simple values", [](auto &_) {
+
+        _.test("generate string", []() {
+   	    snm::string_generator<std::vector<snm::value>> generate;
+            expect(generate(snm::value::all),
+                equal_to("1 2 4 8 16 32 64 "
+                         "1. 2. 4. 8. 16. 32. "
+                         "1.. 2.. 4.. 8.. 16.."));
+        });
+
+        _.test("count dots", []() {
+            std::vector<snm::value::dots_t> truth {
+                0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1, 1,
+                2, 2, 2, 2, 2
+            };
+            std::vector<snm::value::dots_t> dots(snm::value::all.size());
+            std::transform(snm::value::all.begin(), snm::value::all.end(), dots.begin(),
+                [](snm::value v) { return v.dots(); });
+            expect(dots, equal_to(truth));
+        });
+
+        _.test("duration", []() {
+
+       	    // Use operator snm::value::duration to extract durations
+            std::vector<snm::duration> durations; 
+            std::copy(snm::value::all.begin(), 
+	              snm::value::all.end(), 
+	              std::back_inserter(durations));
+
+	    std::vector<snm_test::duration> truth {
+                { 1, 1 }, { 1, 2 }, { 1, 4 }, { 1, 8 }, { 1, 16 }, { 1, 32 }, { 1, 64 },
+                { 3, 2 }, { 3, 4 }, { 3, 8 }, { 3, 16 }, { 3, 32 }, { 3, 64 },
+                { 7, 4 }, { 7, 8 }, { 7, 16 }, { 7, 32 }, { 7, 64 }
+            };
+
+	    auto match = mettle::equal_to<const snm::duration&>;
+	    expect(durations, mettle::each(truth.begin(), truth.end(), match));
+        });
     });
-
-    _.test("duration", []() {
-        // durations should be the equivalent number of 64th notes
-        std::vector<duration> truth{
-            duration(64), duration(32), duration(16), duration(8), duration(4), duration(2), duration(1), duration(96), duration(48), duration(24), duration(12), duration(6), duration(3), duration(112), duration(56), duration(28), duration(14), duration(7)
-        };
-        // transform all_values to the ints.  Could not get mettle::array
-        // matcher to work.
-        std::vector<duration> durations(all_values.size());
-        std::transform(all_values.begin(), all_values.end(), durations.begin(),
-            [](value v) { return duration(v); });
-        expect(durations, equal_to(truth));
-    });
-
-    // _.test("factory functions", [all_values]() {
-
-    //     std::vector<value> v {
-    //         value::whole(),
-    //         value::half(),
-    //         value::quarter(),
-    //         value::eighth(),
-    //         value::sixteenth(),
-    //         value::thirtysecond(),
-    //         value::sixtyfourth(),
-    //         //value::whole(dot(1)),
-    //         //value::half(dot(1)),
-    //         //value::quarter(dot(1)),
-    //         //value::eighth(dot(1)),
-    //         //value::sixteenth(dot(1)),
-    //         //value::thirtysecond(dot(1)),
-    //         //value::whole(dot(2)),
-    //         //value::half(dot(2)),
-    //         //value::quarter(dot(2)),
-    //         //value::eighth(dot(2)),
-    //         //value::sixteenth(dot(2))
-    //     };
-
-    //     expect(v, each(all_values, equal_to<const value&>));
-    // });
-});
