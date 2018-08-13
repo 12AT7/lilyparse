@@ -4,37 +4,37 @@
 
 #include <rapidcheck.h>
 
+namespace snm = lilyparse;
+
 namespace rc {
 
-using namespace lilyparse;
-
 template <>
-struct Arbitrary<pitchclass>
+struct Arbitrary<snm::pitchclass>
 {
-    static Gen<pitchclass> arbitrary()
+    static Gen<snm::pitchclass> arbitrary()
     {
-        static valid_pitchclass valid;
+        static snm::valid_pitchclass valid;
         return gen::elementOf(valid);
     }
 };
 
 template <>
-struct Arbitrary<octave>
+struct Arbitrary<snm::octave>
 {
-    static Gen<octave> arbitrary()
+    static Gen<snm::octave> arbitrary()
     {
-        return gen::construct<octave>(gen::inRange<std::uint8_t>(0, 7));
+        return gen::construct<snm::octave>(gen::inRange<std::uint8_t>(0, 7));
     }
 };
 
 template <>
-struct Arbitrary<pitch>
+struct Arbitrary<snm::pitch>
 {
-    static Gen<pitch> arbitrary()
+    static Gen<snm::pitch> arbitrary()
     {
-        return gen::build<pitch>(
-            gen::set(&pitch::pitchclass_, gen::arbitrary<pitchclass>()),
-            gen::set(&pitch::octave_, gen::arbitrary<octave>()));
+        return gen::build<snm::pitch>(
+            gen::set(&snm::pitch::pitchclass_, gen::arbitrary<snm::pitchclass>()),
+            gen::set(&snm::pitch::octave_, gen::arbitrary<snm::octave>()));
     };
 };
 

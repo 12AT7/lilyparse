@@ -1,63 +1,64 @@
 #pragma once
 
-#include <type_safe/strong_typedef.hpp>
+#include "rational.hpp"
+#include "generate.hpp"
+#include "exception.hpp"
+
 #include <vector>
 
 namespace lilyparse {
 
-// Unlike pitches, rythymic values *are* ammenable to sensible calculations
-// using integer shifts and counting dots.  However, there are so few *actual*
-// valid values used in real music that the model is made much simpler by just
-// fully enumerating the possibilities.
+struct duration;
 
-enum struct value : std::uint8_t
+struct value : rational<std::uint16_t>
 {
-    whole,
-    whole_dot,
-    whole_dotdot,
-    half,
-    half_dot,
-    half_dotdot,
-    quarter,
-    quarter_dot,
-    quarter_dotdot,
-    eighth,
-    eighth_dot,
-    eighth_dotdot,
-    sixteenth,
-    sixteenth_dot,
-    sixteenth_dotdot,
-    thirtysecond,
-    thirtysecond_dot,
-    sixtyfourth,
-    instantaneous
+  public:
+    static value whole() { return { 1, 1 }; }
+    static value half() { return { 1, 2 }; }
+    static value quarter() { return { 1, 4 }; }
+    static value eighth() { return { 1, 8 }; }
+    static value sixteenth() { return { 1, 16 }; }
+    static value thirtysecond() { return { 1, 32 }; }
+    static value sixtyfourth() { return { 1, 64 }; }
+
+    operator duration() const;
+    using dots_t = std::uint8_t;
+    dots_t dots() const;
+
+    using rational<std::uint16_t>::rational;
+
+    // The free function dot() needs the constructor.
+    friend value dot(const value &v);
+
+    static const std::vector<value> all;
+
 };
 
-extern const std::vector<value> all_values;
-extern std::uint8_t dots(value);
-extern std::string to_string(value);
-std::ostream &operator<<(std::ostream &os, value v)
+value dot(const value &v)
 {
-    return os << to_string(v);
+    if (v.num() != 1 and v.num() != 3)
+        throw invalid_value("values can have exactly 0, 1, or 2 dots");
+    return {
+        static_cast<value::integer>(2 * v.num() + 1),
+        static_cast<value::integer>(2 * v.den())
+    };
 }
 
-namespace ts = type_safe;
-
-struct duration : ts::strong_typedef<duration, std::uint16_t>,
-                  ts::strong_typedef_op::equality_comparison<duration>,
-                  ts::strong_typedef_op::addition<duration>
+template <>
+struct string_generator<value>
 {
-    using ts::strong_typedef<duration, std::uint16_t>::strong_typedef;
-
-    duration(value);
+    std::string operator()(value const &v)
+    {
+        return std::to_string(v.den() / (1u << v.dots())) + std::string(v.dots(), '.');
+    }
 };
 
-struct instant : ts::strong_typedef<duration, std::uint32_t>,
-                 ts::strong_typedef_op::equality_comparison<instant>,
-                 ts::strong_typedef_op::relational_comparison<duration>,
-                 ts::strong_typedef_op::mixed_addition<instant, duration>
-{
-    using ts::strong_typedef<duration, std::uint32_t>::strong_typedef;
-};
+// struct tie : std::deque<value>
+// {
+// };
+
+// struct instant : rational<std::uint64_t>
+// {
+// };
 
 } // namespace lilyparse
