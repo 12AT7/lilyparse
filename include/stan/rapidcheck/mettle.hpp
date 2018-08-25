@@ -2,7 +2,7 @@
 
 #include <rapidcheck.h>
 #include <mettle.hpp>
-#include <lilyparse/rapidcheck/generator.hpp>
+#include <stan/rapidcheck/generator.hpp>
 
 namespace mettle {
 
@@ -45,7 +45,7 @@ class property_suite_builder : public suite_builder<Exception, Factory, T...>
 template <typename Exception, typename... Fixture, typename... Args>
 inline runnable_suite
 make_basic_property_suite(const std::string &name, const attributes &attrs,
-    Args &&... args)
+                          Args &&... args)
 {
     using Applied = detail::apply_type<property_suite_builder, Exception>;
     return detail::do_build<Applied::template type, Fixture...>(
@@ -55,7 +55,7 @@ make_basic_property_suite(const std::string &name, const attributes &attrs,
 template <typename Exception, typename... Fixture, typename... Args>
 inline auto
 make_basic_property_suites(const std::string &name, const attributes &attrs,
-    Args &&... args)
+                           Args &&... args)
 {
     using Applied = detail::apply_type<property_suite_builder, Exception>;
     return detail::do_builds<Applied::template type, Fixture...>(
@@ -65,7 +65,7 @@ make_basic_property_suites(const std::string &name, const attributes &attrs,
 template <typename... Fixture, typename Factory, typename F>
 inline runnable_suite
 make_property_suite(const std::string &name, const attributes &attrs,
-    Factory &&factory, F &&f)
+                    Factory &&factory, F &&f)
 {
     return make_basic_property_suite<mettle::expectation_error, Fixture...>(
         name, attrs, std::forward<Factory>(factory), std::forward<F>(f));
@@ -74,7 +74,7 @@ make_property_suite(const std::string &name, const attributes &attrs,
 template <typename... Fixture, typename Factory, typename F>
 inline std::array<mettle::runnable_suite, std::max(sizeof...(Fixture), std::size_t(1))>
 make_property_suites(const std::string &name, const mettle::attributes &attrs,
-    Factory &&factory, F &&f)
+                     Factory &&factory, F &&f)
 {
     return make_basic_property_suites<expectation_error, Fixture...>(
         name, attrs, std::forward<Factory>(factory), std::forward<F>(f));

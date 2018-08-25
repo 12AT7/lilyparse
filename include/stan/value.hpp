@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace lilyparse {
+namespace stan {
 
 struct duration;
 
@@ -31,7 +31,6 @@ struct value : rational<std::uint16_t>
     friend value dot(const value &v);
 
     static const std::vector<value> all;
-
 };
 
 value dot(const value &v)
@@ -61,4 +60,4 @@ struct string_generator<value>
 // {
 // };
 
-} // namespace lilyparse
+} // namespace stan

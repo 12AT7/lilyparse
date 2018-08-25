@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.4.1)
-project(lilyparse CXX)
+project(stan CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-option(build_shared_libs "build lilyparse as a shared library" ON)
+option(build_shared_libs "build stan as a shared library" ON)
 set(BUILD_SHARED_LIBS ${build_shared_libs})
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

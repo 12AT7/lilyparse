@@ -1,16 +1,16 @@
 #include <mettle.hpp>
 
-#include <lilyparse/pitch.hpp>
+#include <stan/pitch.hpp>
 
-#include <lilyparse/rapidcheck/mettle.hpp>
+#include <stan/rapidcheck/mettle.hpp>
 
 mettle::property_suite<> value("pitch", [](auto &_) {
     using namespace mettle;
-    using namespace lilyparse;
+    using namespace stan;
 
-    using pc = lilyparse::pitchclass;
+    using pc = stan::pitchclass;
 
-    static const std::vector<lilyparse::pitchclass> all_pitchclasses{
+    static const std::vector<stan::pitchclass> all_pitchclasses{
         pc::cff, pc::cf, pc::c, pc::cs, pc::css,
         pc::dff, pc::df, pc::d, pc::ds, pc::dss,
         pc::eff, pc::ef, pc::e, pc::es, pc::ess,
@@ -20,19 +20,19 @@ mettle::property_suite<> value("pitch", [](auto &_) {
         pc::bff, pc::bf, pc::b, pc::bs, pc::bss
     };
 
-    _.property("pitchclasses are valid", [](lilyparse::pitchclass pc) {
-        static const lilyparse::valid_pitchclass valid;
+    _.property("pitchclasses are valid", [](stan::pitchclass pc) {
+        static const stan::valid_pitchclass valid;
         expect(valid, member(pc));
     });
 
-    _.property("octaves are valid numbers", [](lilyparse::octave oct) {
+    _.property("octaves are valid numbers", [](stan::octave oct) {
         expect(static_cast<std::uint8_t>(oct), all(greater_equal(0), less(8)));
     });
 
     _.test("to_string", []() {
         std::stringstream buffer;
         std::copy(all_pitchclasses.begin(), all_pitchclasses.end(),
-            std::ostream_iterator<pitchclass>(buffer, " "));
+                  std::ostream_iterator<pitchclass>(buffer, " "));
         expect(buffer.str(), equal_to("cff cf c cs css "
                                       "dff df d ds dss "
                                       "eff ef e es ess "

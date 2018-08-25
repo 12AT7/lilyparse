@@ -4,7 +4,7 @@
 #include <boost/hana/define_struct.hpp>
 #include <set>
 
-namespace lilyparse {
+namespace stan {
 
 namespace ts = type_safe;
 
@@ -16,7 +16,7 @@ namespace ts = type_safe;
 // make for bug prone computer models of harmony.  Thanks, Bach!
 enum struct pitchclass : std::uint8_t
 {
-    // These magic offsets work in concert with the lilyparse::key()
+    // These magic offsets work in concert with the stan::key()
     // constructor that has to compute any mode from any tonic.
     // clang-format off
     cff = 0x02, cf, c, cs, css,
@@ -54,8 +54,8 @@ struct pitch : ts::strong_typedef<pitch, std::uint8_t>
 struct pitch
 {
     BOOST_HANA_DEFINE_STRUCT(pitch,
-        (lilyparse::pitchclass, pitchclass_),
-        (lilyparse::octave, octave_));
+                             (stan::pitchclass, pitchclass_),
+                             (stan::octave, octave_));
 
     midi::pitch get_midi() const;
     staffline get_staffline() const;
@@ -82,4 +82,4 @@ struct valid_pitchclass : std::set<pitchclass>
     valid_pitchclass();
 };
 
-} // namespace lilyparse
+} // namespace stan
