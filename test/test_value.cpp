@@ -11,9 +11,9 @@ namespace stan_test {
 // Need a duration type that can be arbitrarily constructed, for tests
 struct duration : stan::duration
 {
-    duration(std::uint32_t num, std::uint32_t den) :
-        stan::duration(num, den) {}
-    using stan::duration::duration;
+    template <typename... Args>
+    duration(Args &&... args) :
+        stan::duration(std::forward<Args>(args)...) {}
 };
 
 } // namespace stan_test

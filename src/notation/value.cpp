@@ -5,6 +5,17 @@
 
 namespace stan {
 
+value dot(const value &v)
+{
+    if (v.num() != 1 and v.num() != 3) {
+        throw invalid_value("values can have exactly 0, 1, or 2 dots");
+    }
+    return {
+        static_cast<value::integer>(2 * v.num() + 1),
+        static_cast<value::integer>(2 * v.den())
+    };
+}
+
 const std::vector<value> value::all{
     whole(),
     half(),
