@@ -57,6 +57,8 @@ jobs:
           command: |
              llvm-profdata merge -sparse stan.profraw -o stan.profdata;
              llvm-cov show src/libstan.so -instr-profile=stan.profdata > coverage.stan.txt;
+             llvm-cov show bin/ut.value -instr-profile=stan.profdata > coverage.value.txt;
+             llvm-cov show bin/ut.pitch -instr-profile=stan.profdata > coverage.pitch.txt;
              bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c8;
 workflows:
   version: 2
