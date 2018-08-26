@@ -56,7 +56,7 @@ jobs:
           name: Test Coverage
           command: |
              llvm-profdata merge -sparse stan.profraw -o stan.profdata;
-             llvm-cov show -instr-profile=stan.profdata src/libstan.so -object bin/ut.value -object bin/ut.pitch lilyparse/src lilyparse/include lilyparse/test > coverage.stan.txt;
+             llvm-cov show -instr-profile=stan.profdata src/libstan.so -object bin/ut.value -object bin/ut.pitch src/ include/ test/ > coverage.stan.txt;
              bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c8;
 workflows:
   version: 2
