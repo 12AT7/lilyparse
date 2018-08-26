@@ -58,8 +58,8 @@ jobs:
           path: artifacts
       - store_test_results:
           path: artifacts
-      - run: LLVM_PROFILE_FILE="value.profraw" bin/ut.value
-      - run: LLVM_PROFILE_FILE="pitch.profraw" bin/ut.pitch
+      - run: LLVM_PROFILE_FILE="value.profraw" bin/ut.value --no-subproc
+      - run: LLVM_PROFILE_FILE="pitch.profraw" bin/ut.pitch --no-subproc
       - run: llvm-profdata merge -sparse value.profraw pitch.profraw -o stan.profdata
       - run: llvm-cov show bin/ut.value -instr-profile=stan.profdata > coverage.value.txt 
       - run: llvm-cov show bin/ut.pitch -instr-profile=stan.profdata > coverage.pitch.txt 
