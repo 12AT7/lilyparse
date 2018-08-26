@@ -33,15 +33,7 @@ struct value : rational<std::uint16_t>
     static const std::vector<value> all;
 };
 
-value dot(const value &v)
-{
-    if (v.num() != 1 and v.num() != 3)
-        throw invalid_value("values can have exactly 0, 1, or 2 dots");
-    return {
-        static_cast<value::integer>(2 * v.num() + 1),
-        static_cast<value::integer>(2 * v.den())
-    };
-}
+value dot(const value &v);
 
 template <>
 struct string_generator<value>
