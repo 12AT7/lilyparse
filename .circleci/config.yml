@@ -26,12 +26,6 @@ jobs:
           path: artifacts
       - store_test_results:
           path: artifacts
-      - run:
-          name: Generate Coverage Report
-          command: ninja cover.value
-      - run: 
-          name: Upload Coverage Report
-          command: bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c8
   build_clang:
     docker:
       - image: cadenzio/cpp-build:0.0.2
@@ -59,6 +53,15 @@ jobs:
           path: artifacts
       - store_test_results:
           path: artifacts
+      - run:
+          name: Generate profile information
+          command: LLVM_PROFILE_FILE="value.profraw" bin/ut.value; llvm-profdata merge -sparse value.profraw -o value.profdata
+      - run:
+          name: Generate Coverage Report
+          command: llvm-cov show bin/ut.value -instr-profile=value.profdata > coverage.value.txt 
+      - run: 
+          name: Upload Coverage Report
+          command: bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c8
 workflows:
   version: 2
   build_and_test:
