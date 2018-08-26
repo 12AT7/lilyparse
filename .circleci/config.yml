@@ -27,10 +27,10 @@ jobs:
           path: artifacts
       - run:
           name: Generate Coverage Report
-          command: ninja cover.value
+          command: true # ninja cover.value
       - run:
           name: Upload Coverage Report
-          command: true # bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c
+          command: bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c
   build_clang:
     docker:
       - image: cadenzio/cpp-build:0.0.3
@@ -50,7 +50,7 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: LLVM_PROFILE_FILE="stan.profraw" python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts/test_results
+          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts/test_results
       - run:
           name: Generate Test Report
           command: /allure-2.6.0/bin/allure generate artifacts/test_results -o artifacts/test_reports
@@ -58,12 +58,11 @@ jobs:
           path: artifacts
       - store_test_results:
           path: artifacts
-      - run:
-          name: Generate profile information
-          command: llvm-profdata merge -sparse stan.profraw -o stan.profdata
-      - run:
-          name: Generate Coverage Report
-          command: llvm-cov show bin/ut.value -instr-profile=stan.profdata > coverage.value.txt 
+      - run: LLVM_PROFILE_FILE="value.profraw" bin/ut.value
+      - run: LLVM_PROFILE_FILE="pitch.profraw" bin/ut.pitch
+      - run: llvm-profdata merge -sparse value.profraw pitch.profraw -o stan.profdata
+      - run: llvm-cov show bin/ut.value -instr-profile=stan.profdata > coverage.value.txt 
+      - run: llvm-cov show bin/ut.pitch -instr-profile=stan.profdata > coverage.pitch.txt 
       - run: 
           name: Upload Coverage Report
           command: bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c8
