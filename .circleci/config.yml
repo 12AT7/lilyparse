@@ -50,7 +50,7 @@ jobs:
           command: ninja
       - run:
           name: Unit Test
-          command: python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts/test_results
+          command: LLVM_PROFILE_FILE="stan.profraw" python3 dependencies/mettle/scripts/mettle_junit.py bin/ut.* --output artifacts/test_results
       - run:
           name: Generate Test Report
           command: /allure-2.6.0/bin/allure generate artifacts/test_results -o artifacts/test_reports
@@ -60,7 +60,7 @@ jobs:
           path: artifacts
       - run:
           name: Generate profile information
-          command: LLVM_PROFILE_FILE="value.profraw" bin/ut.value --no-subproc; llvm-profdata merge -sparse value.profraw -o value.profdata
+          command: llvm-profdata merge -sparse value.profraw -o value.profdata
       - run:
           name: Generate Coverage Report
           command: llvm-cov show bin/ut.value -instr-profile=value.profdata > coverage.value.txt 
