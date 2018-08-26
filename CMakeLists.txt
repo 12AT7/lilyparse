@@ -28,6 +28,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=5 -fcolor-diagnostics")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_LINK_FLAGS} -stdlib=libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
 endif()
 
 set(BUILD_SHARED_LIBS TRUE)  # Consumed by fmt
@@ -35,7 +36,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 # GCov 
 # set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE TRUE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
 
 enable_testing()
 
