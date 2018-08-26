@@ -54,7 +54,7 @@ jobs:
           path: artifacts
       - run:
           name: Generate profile information
-          command: LLVM_PROFILE_FILE="value.profraw" bin/ut.value; llvm-profdata merge -sparse value.profraw -o value.profdata
+          command: LLVM_PROFILE_FILE="value.profraw" bin/ut.value --no-subproc; llvm-profdata merge -sparse value.profraw -o value.profdata
       - run:
           name: Generate Coverage Report
           command: llvm-cov show bin/ut.value -instr-profile=value.profdata > coverage.value.txt 

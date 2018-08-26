@@ -2,6 +2,7 @@
 #include <stan/duration.hpp>
 
 #include <map>
+#include <iostream>
 
 namespace stan {
 
@@ -119,6 +120,7 @@ value::dots_t value::dots() const
           { dot(dot(whole())), 2 } }
     };
 
+    std::cout << "in dots" << std::endl;
     return lookup.at(*this);
 }
 
