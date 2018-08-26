@@ -26,6 +26,7 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     include(cmake/CodeCoverage.cmake)
+    set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE TRUE)
     set(COVERAGE_EXCLUDES 
 	    '${CMAKE_SOURCE_DIR}/dependencies/*' 
 	    '/usr/include/*'
@@ -44,8 +45,6 @@ endif()
 set(BUILD_SHARED_LIBS TRUE)  # Consumed by fmt
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-# GCov 
-# set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE TRUE)
 
 enable_testing()
 
