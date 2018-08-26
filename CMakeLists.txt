@@ -26,6 +26,8 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     include(cmake/CodeCoverage.cmake)
+    # set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    APPEND_COVERAGE_COMPILER_FLAGS()
     set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE TRUE)
     set(COVERAGE_EXCLUDES 
 	    '${CMAKE_SOURCE_DIR}/dependencies/*' 
