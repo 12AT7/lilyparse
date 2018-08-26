@@ -52,8 +52,8 @@ jobs:
           path: artifacts
       - store_test_results:
           path: artifacts
-      - run: LLVM_PROFILE_FILE="value.profraw" bin/mettle bin/ut.*
-      - run: llvm-profdata merge -sparse value.profraw pitch.profraw -o stan.profdata
+      - run: LLVM_PROFILE_FILE="stan.profraw" bin/mettle bin/ut.*
+      - run: llvm-profdata merge -sparse stan.profraw -o stan.profdata
       - run: llvm-cov show src/libstan.so -instr-profile=stan.profdata > coverage.stan.txt 
       - run: 
           name: Upload Coverage Report
