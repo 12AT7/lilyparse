@@ -10,6 +10,7 @@ struct duration : rational<std::uint32_t>
 
     duration operator+(duration const &d2)
     {
+        // https://www.geeksforgeeks.org/program-to-add-two-fractions
         integer gcd = compute_gcd(den(), d2.den());
         integer d = den() * d2.den() / gcd;
         integer n = num() * (d / den()) + d2.num() * (d / d2.den());
