@@ -1,4 +1,4 @@
-add_library(stan STATIC "")
+add_library(stan "")
 
 include(notation/CMakeLists.txt)
 
