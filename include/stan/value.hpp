@@ -20,6 +20,7 @@ struct value : rational<std::uint16_t>
     static value sixteenth() { return { 1, 16 }; }
     static value thirtysecond() { return { 1, 32 }; }
     static value sixtyfourth() { return { 1, 64 }; }
+    static value instantaneous() { return { 0, 1 }; }
 
     operator duration() const;
     using dots_t = std::uint8_t;

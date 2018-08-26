@@ -1,6 +1,9 @@
 #pragma once
 
+#include <stan/exception.hpp>
+
 #include <tuple>
+#include <iostream>
 
 namespace stan {
 
@@ -31,7 +34,11 @@ struct rational
     // values after construction.
 
     rational(T n, T d) :
-        num_{ n }, den_{ d } {}
+        num_{ n }, den_{ d }
+    {
+        if (den_ == 0)
+            throw invalid_value("zero denominator");
+    }
 
   private:
     const T num_;
@@ -48,6 +55,12 @@ template <typename T>
 bool operator==(rational<T> const &v1, rational<T> const &v2)
 {
     return v1.num() * v2.den() == v2.num() * v1.den();
+}
+
+template <typename T>
+bool operator!=(rational<T> const &v1, rational<T> const &v2)
+{
+    return v1.num() * v2.den() != v2.num() * v1.den();
 }
 
 template <typename T>

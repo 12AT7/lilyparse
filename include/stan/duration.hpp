@@ -10,7 +10,10 @@ struct duration : rational<std::uint32_t>
 
     duration operator+(duration const &d2)
     {
-        return { num() + d2.num(), 1 };
+        integer gcd = compute_gcd(den(), d2.den());
+        integer d = den() * d2.den() / gcd;
+        integer n = num() * (d / den()) + d2.num() * (d / d2.den());
+        return { n, d };
     }
 
     friend struct value;
@@ -25,6 +28,17 @@ struct duration : rational<std::uint32_t>
     // {
     //     return { 0, 1 };
     // }
+    //
+  private:
+    integer compute_gcd(integer a, integer b)
+    {
+        while (b != 0) {
+            integer tmp = b;
+            b = a % b;
+            a = tmp;
+        }
+        return a;
+    }
 };
 
 template <>

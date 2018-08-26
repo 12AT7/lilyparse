@@ -6,7 +6,7 @@
 
 #include <numeric>
 
-namespace stan_test {
+namespace stan::test {
 
 // Need a duration type that can be arbitrarily constructed, for tests
 struct duration : stan::duration
@@ -16,22 +16,22 @@ struct duration : stan::duration
         stan::duration(std::forward<Args>(args)...) {}
 };
 
-} // namespace stan_test
-
-namespace stan {
-
 std::string to_printable(duration const &value)
 {
-    static stan::string_generator<duration> generate;
+    static stan::string_generator<stan::duration> generate;
     return generate(value);
 }
 
-} // namespace stan
+} // namespace stan::test
 
 using mettle::equal_to;
 using mettle::expect;
+using mettle::not_equal_to;
+using mettle::thrown;
 
-mettle::suite<> suite("simple values", [](auto &_) {
+mettle::suite<> suite("value", [](auto &_) {
+    using stan::test::duration;
+
     _.test("generate string", []() {
         stan::string_generator<std::vector<stan::value>> generate;
         expect(generate(stan::value::all),
@@ -52,14 +52,34 @@ mettle::suite<> suite("simple values", [](auto &_) {
         expect(dots, equal_to(truth));
     });
 
-    _.test("duration", []() {
+    _.test("too many dots", []() {
+        expect([]() { dot(dot(dot(stan::value::whole()))); },
+               thrown<stan::invalid_value>());
+    });
+
+    _.test("duration construction", []() {
+        expect(duration(3, 8).den(), equal_to(8));
+        expect(duration(3, 8).num(), equal_to(3));
+        expect([]() { duration{ 1, 0 }; },
+               thrown<stan::invalid_value>("invalid value: zero denominator"));
+    });
+
+    _.test("duration operators", []() {
+        expect("==", duration{ 3, 8 }, equal_to(duration{ 3, 8 }));
+        expect("==", duration{ 3, 8 }, equal_to(duration{ 6, 16 }));
+        expect("!=", duration{ 3, 8 }, not_equal_to(duration{ 3, 4 }));
+        expect("!=", duration{ 3, 8 }, not_equal_to(duration{ 4, 8 }));
+        expect("add", duration{ 3, 8 } + duration{ 1, 16 }, equal_to(duration{ 7, 16 }));
+    });
+
+    _.test("value durations", []() {
         // Use operator stan::value::duration to extract durations
         std::vector<stan::duration> durations;
         std::copy(stan::value::all.begin(),
                   stan::value::all.end(),
                   std::back_inserter(durations));
 
-        std::vector<stan_test::duration> truth{
+        std::vector<duration> truth{
             { 1, 1 }, { 1, 2 }, { 1, 4 }, { 1, 8 }, { 1, 16 }, { 1, 32 }, { 1, 64 }, { 3, 2 }, { 3, 4 }, { 3, 8 }, { 3, 16 }, { 3, 32 }, { 3, 64 }, { 7, 4 }, { 7, 8 }, { 7, 16 }, { 7, 32 }, { 7, 64 }
         };
 

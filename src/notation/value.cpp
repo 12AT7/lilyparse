@@ -2,12 +2,13 @@
 #include <stan/duration.hpp>
 
 #include <map>
-#include <iostream>
 
 namespace stan {
 
 value dot(const value &v)
 {
+    // The operation is either going from 0->1 dot, or 1->2 dots.  There
+    // are no other valid situations.
     if (v.num() != 1 and v.num() != 3) {
         throw invalid_value("values can have exactly 0, 1, or 2 dots");
     }
@@ -35,72 +36,42 @@ const std::vector<value> value::all{
     dot(dot(half())),
     dot(dot(quarter())),
     dot(dot(eighth())),
-    dot(dot(sixteenth())),
+    dot(dot(sixteenth()))
 };
 
-// static const std::map<value, std::uint16_t> duration_lookup{
 value::operator duration() const
 {
-    return { 0, 0 };
+    static const std::map<value, duration> duration_table{
+        {
+            { value::instantaneous(), { 0, 1 } },
+            { value::sixtyfourth(), { 1, 64 } },
+            { value::thirtysecond(), { 1, 32 } },
+            { dot(value::thirtysecond()), { 3, 64 } },
+            { value::sixteenth(), { 1, 16 } },
+            { dot(value::sixteenth()), { 3, 32 } },
+            { dot(dot(value::sixteenth())), { 7, 64 } },
+            { value::eighth(), { 1, 8 } },
+            { dot(value::eighth()), { 3, 16 } },
+            { dot(dot(value::eighth())), { 7, 32 } },
+            { value::quarter(), { 1, 4 } },
+            { dot(value::quarter()), { 3, 8 } },
+            { dot(dot(value::quarter())), { 7, 16 } },
+            { value::half(), { 1, 2 } },
+            { dot(value::half()), { 3, 4 } },
+            { dot(dot(value::half())), { 7, 8 } },
+            { value::whole(), { 1, 1 } },
+            { dot(value::whole()), { 3, 2 } },
+            { dot(dot(value::whole())), { 7, 4 } },
+        }
+    };
+
+    return duration_table.at(*this);
 }
 
-//     { value::instantaneous, 0 },
-//     { value::sixtyfourth, 1 },
-//     { value::thirtysecond, 2 },
-//     { value::thirtysecond_dot, 3 },
-//     { value::sixteenth, 4 },
-//     { value::sixteenth_dot, 6 },
-//     { value::sixteenth_dotdot, 7 },
-//     { value::eighth, 8 },
-//     { value::eighth_dot, 12 },
-//     { value::eighth_dotdot, 14 },
-//     { value::quarter, 16 },
-//     { value::quarter_dot, 24 },
-//     { value::quarter_dotdot, 28 },
-//     { value::half, 32 },
-//     { value::half_dot, 48 },
-//     { value::half_dotdot, 56 },
-//     { value::whole, 64 },
-//     { value::whole_dot, 96 },
-//     { value::whole_dotdot, 112 },
-// };
-//
-// duration::duration(value v)
-//     : ts::strong_typedef<duration, std::uint16_t>(duration_lookup.at(v))
-// {
-// }
-//
-// std::string to_string(value v)
-// {
-//     static const std::map<value, const char *> lookup{
-//         { value::instantaneous, "" },
-//         { value::sixtyfourth, "64" },
-//         { value::thirtysecond, "32" },
-//         { value::thirtysecond_dot, "32." },
-//         { value::sixteenth, "16" },
-//         { value::sixteenth_dot, "16." },
-//         { value::sixteenth_dotdot, "16.." },
-//         { value::eighth, "8" },
-//         { value::eighth_dot, "8." },
-//         { value::eighth_dotdot, "8.." },
-//         { value::quarter, "4" },
-//         { value::quarter_dot, "4." },
-//         { value::quarter_dotdot, "4.." },
-//         { value::half, "2" },
-//         { value::half_dot, "2." },
-//         { value::half_dotdot, "2.." },
-//         { value::whole, "1" },
-//         { value::whole_dot, "1." },
-//         { value::whole_dotdot, "1.." },
-//     };
-//
-//     return lookup.at(v);
-// }
-//
 value::dots_t value::dots() const
 {
-    static const std::map<value, value::dots_t> lookup{
-        { { value::sixtyfourth(), 0 },
+    static const std::map<value, value::dots_t> dots_table{
+        { { sixtyfourth(), 0 },
           { thirtysecond(), 0 },
           { sixteenth(), 0 },
           { eighth(), 0 },
@@ -120,7 +91,7 @@ value::dots_t value::dots() const
           { dot(dot(whole())), 2 } }
     };
 
-    return lookup.at(*this);
+    return dots_table.at(*this);
 }
 
 } // namespace stan
