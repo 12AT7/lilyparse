@@ -27,7 +27,7 @@ jobs:
           path: artifacts
   build_clang:
     docker:
-      - image: cadenzio/cpp-build:0.0.2
+      - image: cadenzio/cpp-build:0.0.3
     steps:
       - checkout
       - run: 
