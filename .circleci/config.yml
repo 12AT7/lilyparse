@@ -25,6 +25,12 @@ jobs:
           path: artifacts
       - store_test_results:
           path: artifacts
+      - run:
+          name: Generate Coverage Report
+          command: ninja cover.value
+      - run:
+          name: Upload Coverage Report
+          command: bash <(curl -s https://codecov.io/bash) -t be1c64b9-e403-48b6-82ff-c2541e90e7c
   build_clang:
     docker:
       - image: cadenzio/cpp-build:0.0.3

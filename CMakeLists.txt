@@ -24,11 +24,21 @@ find_program(CLANG_TIDY "clang-tidy" REQUIRED)
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+    include(cmake/CodeCoverage.cmake)
+    set(COVERAGE_EXCLUDES 
+	    '${CMAKE_SOURCE_DIR}/dependencies/*' 
+	    '/usr/include/*'
+	    '${CMAKE_BINARY_DIR}/CMakeFiles/*'
+	    )
+endif (CMAKE_COMPILER_IS_GNUCXX)
+
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=5 -fcolor-diagnostics")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
-    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_LINK_FLAGS} -stdlib=libstdc++")
+    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -stdlib=libstdc++")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
 endif()
 
 set(BUILD_SHARED_LIBS TRUE)  # Consumed by fmt

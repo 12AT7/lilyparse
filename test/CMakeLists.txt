@@ -7,12 +7,14 @@ foreach(component IN ITEMS pitch value)
     add_test(NAME ${component} 
 	     COMMAND ${CMAKE_BINARY_DIR}/bin/ut.${component} -o verbose)
 
+    if(CMAKE_COMPILER_IS_GNUCXX)
      # if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-     #    setup_target_for_coverage(
-     #    	NAME "cover.${component}" 
-     #    	EXECUTABLE ${CMAKE_BINARY_DIR}/bin/ut.${component} 
-     #    	DEPENDENCIES ${component})
-     #    add_dependencies( coverage "cover.${component}" )
+        setup_target_for_coverage(
+        	NAME "cover.${component}" 
+        	EXECUTABLE ${CMAKE_BINARY_DIR}/bin/ut.${component} 
+        	DEPENDENCIES ${component})
+         add_dependencies( coverage "cover.${component}" )
+     endif (CMAKE_COMPILER_IS_GNUCXX)
      # endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 endforeach()
