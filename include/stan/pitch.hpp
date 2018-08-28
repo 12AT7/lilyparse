@@ -1,8 +1,11 @@
 #pragma once
 
+#include "generate.hpp"
+
 #include <type_safe/strong_typedef.hpp>
 #include <boost/hana/define_struct.hpp>
 #include <set>
+#include <map>
 
 namespace stan {
 
@@ -29,6 +32,17 @@ enum struct pitchclass : std::uint8_t
     // clang-format on
 };
 
+extern std::map<pitchclass, const char *> const pitchclass_names;
+
+template <>
+struct string_generator<pitchclass>
+{
+    std::string operator()(pitchclass const &v)
+    {
+        return pitchclass_names.at(v);
+    }
+};
+
 // An octave is a std::uint8_t, with very limited semantics
 struct octave : ts::strong_typedef<octave, std::uint8_t>,
                 ts::strong_typedef_op::addition<octave>,
@@ -50,18 +64,11 @@ struct pitch
                              (stan::pitchclass, pitchclass_),
                              (stan::octave, octave_));
 
-    // midi::pitch get_midi() const;
-    staffline get_staffline() const;
-
-    // friend std::string to_string(const pitch &p);
-    // friend std::ostream &operator<<(std::ostream &, const pitch &);
+    staffline staffline() const;
 
     friend bool operator<(const pitch &, const pitch &);
     friend bool operator==(const pitch &, const pitch &);
 };
-
-// extern std::string to_string(pitchclass);
-// extern std::ostream &operator<<(std::ostream &, const pitchclass &);
 
 // Enumerating all of valid pitchclasses is useful, especially in testing, but
 // their weird numbering scheme inhibits an easy iteration.  C++ also lacks the

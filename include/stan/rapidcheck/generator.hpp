@@ -32,8 +32,9 @@ struct Arbitrary<pitch>
 {
     static Gen<pitch> arbitrary()
     {
+        static valid_pitchclass valid;
         return gen::build<pitch>(
-            gen::set(&pitch::pitchclass_, gen::arbitrary<pitchclass>()),
+            gen::set(&pitch::pitchclass_, gen::elementOf(valid)),
             gen::set(&pitch::octave_, gen::arbitrary<octave>()));
     };
 };

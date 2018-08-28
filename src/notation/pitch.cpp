@@ -6,7 +6,7 @@
 
 namespace stan {
 
-static const std::map<pitchclass, const char *> pitchclass_names = {
+const std::map<pitchclass, const char *> pitchclass_names = {
     { pitchclass::cff, "cff" },
     { pitchclass::cf, "cf" },
     { pitchclass::c, "c" },
@@ -61,7 +61,7 @@ valid_pitchclass::valid_pitchclass()
     }
 }
 
-staffline pitch::get_staffline() const
+staffline pitch::staffline() const
 {
     // Compute the staff line offset, referenced to C4=0.
 
@@ -104,8 +104,8 @@ staffline pitch::get_staffline() const
     };
 
     static const octave middle_C(4);
-    return staffline(line.at(pitchclass_) +
-                     (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
+    return stan::staffline(line.at(pitchclass_) +
+                           (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
 };
 
 // std::ostream &operator<<(std::ostream &os, const pitch &p)
