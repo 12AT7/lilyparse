@@ -97,6 +97,15 @@ mettle::suite<> duration("duration", [](auto &_) {
         expect(to_printable(duration{ 600, 2400 }), equal_to("1/4"));
     });
 
+    _.test("string_generate", []() {
+        std::vector<duration> constructions{ { 1, 2 }, { 2, 6 }, { 600, 2400 } };
+        stan::string_generator<std::vector<stan::duration>> generate;
+        std::vector<stan::duration> values;
+        expect(generate(values), equal_to(""));
+        std::copy(constructions.begin(), constructions.end(), std::back_inserter(values));
+        expect(generate(values), equal_to("1/2 1/3 1/4"));
+    });
+
     _.test("addition", []() {
         expect(duration{ 1, 2 } + duration{ 1, 4 }, equal_to(duration{ 3, 4 }));
         expect(duration{ 3, 8 } + duration{ 5, 16 }, equal_to(duration{ 11, 16 }));
