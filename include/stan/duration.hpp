@@ -30,8 +30,8 @@ struct duration : rational<std::uint32_t>
     //     return { 0, 1 };
     // }
     //
-  private:
-    integer compute_gcd(integer a, integer b)
+    // private:
+    integer compute_gcd(integer a, integer b) const
     {
         while (b != 0) {
             integer tmp = b;
@@ -47,7 +47,8 @@ struct string_generator<duration>
 {
     std::string operator()(duration const &d)
     {
-        return std::to_string(d.num()) + "/" + std::to_string(d.den());
+        duration::integer gcd = d.compute_gcd(d.num(), d.den());
+        return std::to_string(d.num() / gcd) + "/" + std::to_string(d.den() / gcd);
     }
 };
 

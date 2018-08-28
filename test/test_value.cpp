@@ -16,10 +16,10 @@ struct duration : stan::duration
         stan::duration(std::forward<Args>(args)...) {}
 };
 
-std::string to_printable(duration const &value)
+std::string to_printable(duration const &dur)
 {
     static stan::string_generator<stan::duration> generate;
-    return generate(value);
+    return generate(dur);
 }
 
 } // namespace stan::test
@@ -85,5 +85,21 @@ mettle::suite<> suite("value", [](auto &_) {
 
         auto match = mettle::equal_to<const stan::duration &>;
         expect(durations, mettle::each(truth.begin(), truth.end(), match));
+    });
+});
+
+mettle::suite<> duration("duration", [](auto &_) {
+    using stan::test::duration;
+
+    _.test("to_printable", []() {
+        expect(to_printable(duration{ 1, 2 }), equal_to("1/2"));
+        expect(to_printable(duration{ 2, 6 }), equal_to("1/3"));
+        expect(to_printable(duration{ 600, 2400 }), equal_to("1/4"));
+    });
+
+    _.test("addition", []() {
+        expect(duration{ 1, 2 } + duration{ 1, 4 }, equal_to(duration{ 3, 4 }));
+        expect(duration{ 3, 8 } + duration{ 5, 16 }, equal_to(duration{ 11, 16 }));
+        expect(duration{ 3, 8 } + duration{ 24, 16 }, equal_to(duration{ 15, 8 }));
     });
 });
