@@ -6,9 +6,42 @@
 
 namespace stan {
 
-using pc = pitchclass;
 static const std::map<pitchclass, const char *> pitchclass_names = {
-    { pc::cff, "cff" }, { pc::cf, "cf" }, { pc::c, "c" }, { pc::cs, "cs" }, { pc::css, "css" }, { pc::dff, "dff" }, { pc::df, "df" }, { pc::d, "d" }, { pc::ds, "ds" }, { pc::dss, "dss" }, { pc::eff, "eff" }, { pc::ef, "ef" }, { pc::e, "e" }, { pc::es, "es" }, { pc::ess, "ess" }, { pc::fff, "fff" }, { pc::ff, "ff" }, { pc::f, "f" }, { pc::fs, "fs" }, { pc::fss, "fss" }, { pc::gff, "gff" }, { pc::gf, "gf" }, { pc::g, "g" }, { pc::gs, "gs" }, { pc::gss, "gss" }, { pc::aff, "aff" }, { pc::af, "af" }, { pc::a, "a" }, { pc::as, "as" }, { pc::ass, "ass" }, { pc::bff, "bff" }, { pc::bf, "bf" }, { pc::b, "b" }, { pc::bs, "bs" }, { pc::bss, "bss" }
+    { pitchclass::cff, "cff" },
+    { pitchclass::cf, "cf" },
+    { pitchclass::c, "c" },
+    { pitchclass::cs, "cs" },
+    { pitchclass::css, "css" },
+    { pitchclass::dff, "dff" },
+    { pitchclass::df, "df" },
+    { pitchclass::d, "d" },
+    { pitchclass::ds, "ds" },
+    { pitchclass::dss, "dss" },
+    { pitchclass::eff, "eff" },
+    { pitchclass::ef, "ef" },
+    { pitchclass::e, "e" },
+    { pitchclass::es, "es" },
+    { pitchclass::ess, "ess" },
+    { pitchclass::fff, "fff" },
+    { pitchclass::ff, "ff" },
+    { pitchclass::f, "f" },
+    { pitchclass::fs, "fs" },
+    { pitchclass::fss, "fss" },
+    { pitchclass::gff, "gff" },
+    { pitchclass::gf, "gf" },
+    { pitchclass::g, "g" },
+    { pitchclass::gs, "gs" },
+    { pitchclass::gss, "gss" },
+    { pitchclass::aff, "aff" },
+    { pitchclass::af, "af" },
+    { pitchclass::a, "a" },
+    { pitchclass::as, "as" },
+    { pitchclass::ass, "ass" },
+    { pitchclass::bff, "bff" },
+    { pitchclass::bf, "bf" },
+    { pitchclass::b, "b" },
+    { pitchclass::bs, "bs" },
+    { pitchclass::bss, "bss" }
 };
 
 std::string to_string(pitchclass p)
@@ -21,15 +54,6 @@ std::string to_string(pitchclass p)
     return it->second;
 }
 
-std::string to_string(const pitch &p)
-{
-    std::string lily = to_string(p.pitchclass_);
-    auto rawoctave = static_cast<std::uint8_t>(p.octave_);
-    std::copy_n(",,,,", 4 - rawoctave, std::back_inserter(lily));
-    std::copy_n("''''", rawoctave - 4, std::back_inserter(lily));
-    return lily;
-}
-
 valid_pitchclass::valid_pitchclass()
 {
     for (auto [key, value] : pitchclass_names) {
@@ -37,106 +61,57 @@ valid_pitchclass::valid_pitchclass()
     }
 }
 
-midi::pitch pitch::get_midi() const
-{
-    // Compute the actual pitch number, using the MIDI convention C4=60.
-    // As this reduction discards all subtlety about enharmonics, it is
-    // used only in specific places that need this representation (like
-    // MIDI note_on/note_off and geometry calculations).  There is no way
-    // to go backwards, from int to pitch, because of the enharmonic
-    // ambiguity.
-
-    using pc = stan::pitchclass;
-    static const std::map<pitchclass, std::uint8_t> midi{ { pc::cff, 58 },
-                                                          { pc::cf, 59 },
-                                                          { pc::c, 60 },
-                                                          { pc::cs, 61 },
-                                                          { pc::css, 62 },
-                                                          { pc::dff, 60 },
-                                                          { pc::df, 61 },
-                                                          { pc::d, 62 },
-                                                          { pc::ds, 63 },
-                                                          { pc::dss, 64 },
-                                                          { pc::eff, 62 },
-                                                          { pc::ef, 63 },
-                                                          { pc::e, 64 },
-                                                          { pc::es, 65 },
-                                                          { pc::ess, 66 },
-                                                          { pc::fff, 63 },
-                                                          { pc::ff, 64 },
-                                                          { pc::f, 65 },
-                                                          { pc::fs, 66 },
-                                                          { pc::fss, 67 },
-                                                          { pc::gff, 65 },
-                                                          { pc::gf, 66 },
-                                                          { pc::g, 67 },
-                                                          { pc::gs, 68 },
-                                                          { pc::gss, 69 },
-                                                          { pc::aff, 67 },
-                                                          { pc::af, 68 },
-                                                          { pc::a, 69 },
-                                                          { pc::as, 70 },
-                                                          { pc::ass, 71 },
-                                                          { pc::bff, 69 },
-                                                          { pc::bf, 70 },
-                                                          { pc::b, 71 },
-                                                          { pc::bs, 72 },
-                                                          { pc::bss, 73 } };
-
-    return midi::pitch(
-        midi.at(pitchclass_) + (static_cast<std::uint8_t>(octave_) - 4) * 12);
-}
-
 staffline pitch::get_staffline() const
 {
     // Compute the staff line offset, referenced to C4=0.
 
-    using pc = stan::pitchclass;
-    static const std::map<pitchclass, std::uint8_t> line{ { pc::cff, 0 },
-                                                          { pc::cf, 0 },
-                                                          { pc::c, 0 },
-                                                          { pc::cs, 0 },
-                                                          { pc::css, 0 },
-                                                          { pc::dff, 1 },
-                                                          { pc::df, 1 },
-                                                          { pc::d, 1 },
-                                                          { pc::ds, 1 },
-                                                          { pc::dss, 1 },
-                                                          { pc::eff, 2 },
-                                                          { pc::ef, 2 },
-                                                          { pc::e, 2 },
-                                                          { pc::es, 2 },
-                                                          { pc::ess, 2 },
-                                                          { pc::fff, 3 },
-                                                          { pc::ff, 3 },
-                                                          { pc::f, 3 },
-                                                          { pc::fs, 3 },
-                                                          { pc::fss, 3 },
-                                                          { pc::gff, 4 },
-                                                          { pc::gf, 4 },
-                                                          { pc::g, 4 },
-                                                          { pc::gs, 4 },
-                                                          { pc::gss, 4 },
-                                                          { pc::aff, 5 },
-                                                          { pc::af, 5 },
-                                                          { pc::a, 5 },
-                                                          { pc::as, 5 },
-                                                          { pc::ass, 5 },
-                                                          { pc::bff, 6 },
-                                                          { pc::bf, 6 },
-                                                          { pc::b, 6 },
-                                                          { pc::bs, 6 },
-                                                          { pc::bss, 6 } };
+    static const std::map<pitchclass, std::uint8_t> line{
+        { pitchclass::cff, 0 },
+        { pitchclass::cf, 0 },
+        { pitchclass::c, 0 },
+        { pitchclass::cs, 0 },
+        { pitchclass::css, 0 },
+        { pitchclass::dff, 1 },
+        { pitchclass::df, 1 },
+        { pitchclass::d, 1 },
+        { pitchclass::ds, 1 },
+        { pitchclass::dss, 1 },
+        { pitchclass::eff, 2 },
+        { pitchclass::ef, 2 },
+        { pitchclass::e, 2 },
+        { pitchclass::es, 2 },
+        { pitchclass::ess, 2 },
+        { pitchclass::fff, 3 },
+        { pitchclass::ff, 3 },
+        { pitchclass::f, 3 },
+        { pitchclass::fs, 3 },
+        { pitchclass::fss, 3 },
+        { pitchclass::gff, 4 },
+        { pitchclass::gf, 4 },
+        { pitchclass::g, 4 },
+        { pitchclass::gs, 4 },
+        { pitchclass::gss, 4 },
+        { pitchclass::aff, 5 },
+        { pitchclass::af, 5 },
+        { pitchclass::a, 5 },
+        { pitchclass::as, 5 },
+        { pitchclass::ass, 5 },
+        { pitchclass::bff, 6 },
+        { pitchclass::bf, 6 },
+        { pitchclass::b, 6 },
+        { pitchclass::bs, 6 },
+        { pitchclass::bss, 6 }
+    };
 
     static const octave middle_C(4);
     return staffline(line.at(pitchclass_) +
                      (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
 };
 
-std::ostream &operator<<(std::ostream &os, const pitch &p)
-{
-    return os << to_string(p);
-}
+// std::ostream &operator<<(std::ostream &os, const pitch &p)
+// {
+//     return os << to_string(p);
+// }
 
 bool operator<(const pitch &p1, const pitch &p2)
 {
@@ -146,9 +121,9 @@ bool operator<(const pitch &p1, const pitch &p2)
     return p1.pitchclass_ < p2.pitchclass_;
 }
 
-std::ostream &operator<<(std::ostream &os, const pitchclass &pc)
-{
-    return os << to_string(pc);
-}
+// std::ostream &operator<<(std::ostream &os, const pitchclass &pc)
+// {
+//     return os << to_string(pc);
+// }
 
 } // namespace stan

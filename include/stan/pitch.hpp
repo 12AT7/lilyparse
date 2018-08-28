@@ -44,31 +44,24 @@ struct staffline : ts::strong_typedef<staffline, std::uint8_t>
     using ts::strong_typedef<staffline, std::uint8_t>::strong_typedef;
 };
 
-namespace midi {
-struct pitch : ts::strong_typedef<pitch, std::uint8_t>
-{
-    using ts::strong_typedef<pitch, std::uint8_t>::strong_typedef;
-};
-} // namespace midi
-
 struct pitch
 {
     BOOST_HANA_DEFINE_STRUCT(pitch,
                              (stan::pitchclass, pitchclass_),
                              (stan::octave, octave_));
 
-    midi::pitch get_midi() const;
+    // midi::pitch get_midi() const;
     staffline get_staffline() const;
 
-    friend std::string to_string(const pitch &p);
-    friend std::ostream &operator<<(std::ostream &, const pitch &);
+    // friend std::string to_string(const pitch &p);
+    // friend std::ostream &operator<<(std::ostream &, const pitch &);
 
     friend bool operator<(const pitch &, const pitch &);
     friend bool operator==(const pitch &, const pitch &);
 };
 
-extern std::string to_string(pitchclass);
-extern std::ostream &operator<<(std::ostream &, const pitchclass &);
+// extern std::string to_string(pitchclass);
+// extern std::ostream &operator<<(std::ostream &, const pitchclass &);
 
 // Enumerating all of valid pitchclasses is useful, especially in testing, but
 // their weird numbering scheme inhibits an easy iteration.  C++ also lacks the

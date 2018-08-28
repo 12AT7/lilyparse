@@ -1,4 +1,4 @@
-foreach(component IN ITEMS pitch value)
+foreach(component IN ITEMS value)
     add_executable (${component} "test_${component}.cpp")
     target_link_libraries(${component} stan libmettle rapidcheck Threads::Threads)
     set_target_properties(${component} PROPERTIES PREFIX "ut.")

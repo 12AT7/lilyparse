@@ -4,10 +4,7 @@
 
 #include <stan/rapidcheck/mettle.hpp>
 
-mettle::property_suite<> value("pitch", [](auto &_) {
-    using namespace mettle;
-    using namespace stan;
-
+mettle::property_suite<> pitchclass("pitchclass", [](auto &_) {
     using pc = stan::pitchclass;
 
     static const std::vector<stan::pitchclass> all_pitchclasses{
@@ -19,6 +16,11 @@ mettle::property_suite<> value("pitch", [](auto &_) {
         pc::aff, pc::af, pc::a, pc::as, pc::ass,
         pc::bff, pc::bf, pc::b, pc::bs, pc::bss
     };
+});
+
+mettle::property_suite<> pitch("pitch", [](auto &_) {
+    using namespace mettle;
+    using namespace stan;
 
     _.property("pitchclasses are valid", [](stan::pitchclass pc) {
         static const stan::valid_pitchclass valid;
