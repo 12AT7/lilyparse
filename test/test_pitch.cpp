@@ -55,7 +55,7 @@ mettle::property_suite<> pitch_suite("pitch", [](auto &_) {
     });
 
     _.property("pitches", [](stan::pitch p) {
-        expect(static_cast<std::uint8_t>(p.staffline()), all(greater_equal(0)));
+        expect(static_cast<std::uint8_t>(p.get_staffline()), all(greater_equal(0)));
     });
 
     _.test("sorting", []() {

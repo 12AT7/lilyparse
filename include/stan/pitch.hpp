@@ -64,7 +64,7 @@ struct pitch
                              (stan::pitchclass, pitchclass_),
                              (stan::octave, octave_));
 
-    staffline staffline() const;
+    staffline get_staffline() const;
 
     friend bool operator<(const pitch &, const pitch &);
     friend bool operator==(const pitch &, const pitch &);

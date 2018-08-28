@@ -61,7 +61,7 @@ valid_pitchclass::valid_pitchclass()
     }
 }
 
-staffline pitch::staffline() const
+staffline pitch::get_staffline() const
 {
     // Compute the staff line offset, referenced to C4=0.
 
@@ -104,8 +104,8 @@ staffline pitch::staffline() const
     };
 
     static const octave middle_C(4);
-    return stan::staffline(line.at(pitchclass_) +
-                           (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
+    return staffline(line.at(pitchclass_) +
+                     (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
 };
 
 // std::ostream &operator<<(std::ostream &os, const pitch &p)
