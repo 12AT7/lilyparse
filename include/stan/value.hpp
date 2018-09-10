@@ -45,12 +45,4 @@ struct string_generator<value>
     }
 };
 
-// struct tie : std::deque<value>
-// {
-// };
-
-// struct instant : rational<std::uint64_t>
-// {
-// };
-
 } // namespace stan

@@ -61,9 +61,10 @@ struct staffline : ts::strong_typedef<staffline, std::uint8_t>
 struct pitch
 {
     BOOST_HANA_DEFINE_STRUCT(pitch,
-                             (stan::pitchclass, pitchclass_),
-                             (stan::octave, octave_));
+                             (stan::pitchclass, m_pitchclass),
+                             (stan::octave, m_octave));
 
+    pitch(pitchclass p, octave oct) : m_pitchclass{p}, m_octave{oct} {}
     staffline get_staffline() const;
 
     friend bool operator<(const pitch &, const pitch &);

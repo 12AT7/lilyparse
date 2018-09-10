@@ -104,26 +104,16 @@ staffline pitch::get_staffline() const
     };
 
     static const octave middle_C(4);
-    return staffline(line.at(pitchclass_) +
-                     (static_cast<std::uint8_t>(octave_ - middle_C)) * 7);
+    return staffline(line.at(m_pitchclass) +
+                     (static_cast<std::uint8_t>(m_octave - middle_C)) * 7);
 };
-
-// std::ostream &operator<<(std::ostream &os, const pitch &p)
-// {
-//     return os << to_string(p);
-// }
 
 bool operator<(const pitch &p1, const pitch &p2)
 {
-    if (p1.octave_ != p2.octave_) {
-        return p1.octave_ < p2.octave_;
+    if (p1.m_octave != p2.m_octave) {
+        return p1.m_octave < p2.m_octave;
     }
-    return p1.pitchclass_ < p2.pitchclass_;
+    return p1.m_pitchclass < p2.m_pitchclass;
 }
-
-// std::ostream &operator<<(std::ostream &os, const pitchclass &pc)
-// {
-//     return os << to_string(pc);
-// }
 
 } // namespace stan

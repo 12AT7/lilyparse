@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stan/pitch.hpp>
+#include <stan/value.hpp>
+#include <stan/column.hpp>
 
 #include <rapidcheck.h>
 
@@ -33,9 +35,30 @@ struct Arbitrary<pitch>
     static Gen<pitch> arbitrary()
     {
         static valid_pitchclass valid;
-        return gen::build<pitch>(
-            gen::set(&pitch::pitchclass_, gen::elementOf(valid)),
-            gen::set(&pitch::octave_, gen::arbitrary<octave>()));
+        return gen::construct<pitch>(
+            gen::elementOf(valid),
+            gen::arbitrary<octave>());
+    };
+};
+
+template <>
+struct Arbitrary<value>
+{
+    static Gen<value> arbitrary()
+    {
+        return gen::elementOf(value::all);
+    };
+};
+
+template <>
+struct Arbitrary<note>
+{
+    static Gen<note> arbitrary()
+    {
+        return gen::construct<note>(
+                gen::arbitrary<value>(),
+                gen::arbitrary<pitch>()
+                );
     };
 };
 

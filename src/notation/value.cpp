@@ -88,8 +88,9 @@ value::dots_t value::dots() const
           { dot(dot(eighth())), 2 },
           { dot(dot(quarter())), 2 },
           { dot(dot(half())), 2 },
-          { dot(dot(whole())), 2 } }
-    };
+          { dot(dot(whole())), 2 },
+          { instantaneous(), 0 } }
+        };
 
     return dots_table.at(*this);
 }

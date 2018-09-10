@@ -11,20 +11,20 @@ namespace stan {
 // to inherit boost::rational<> or similar base class.  However, the semantics
 // of a note value are very restricted compared to a rational and it would have
 // actually been more complicated to restrict the power of boost::rational<>
-// than just build a new class with only valid operations and values defined.
-// A basic note value can only have numerators valued 1, 3, or 7 (to model dot
-// notation) and denominators that are small powers of two.  Tuplets and ties
-// complicated the situation a little bit, but can still be modeled as a
-// rational number.  Tuplets and ties however also imply a grouping of multiple
-// values together, so will be modeled as separate classes.
+// than just build a new class with only valid operations and values defined.  A
+// basic note value can only have numerators valued 1, 3, or 7 (to model 0, 1,
+// or 2 dots, respectively) and denominators that are small powers of two.
+// Tuplets and ties complicated the situation a little bit, but can still be
+// modeled as a rational number.  Tuplets and ties however also imply a grouping
+// of multiple values together, so will be modeled as separate classes.
 
 template <typename T>
 struct rational
 {
     using integer = T;
 
-    T num() const { return num_; }
-    T den() const { return den_; }
+    T num() const { return m_num; }
+    T den() const { return m_den; }
 
     rational<T> operator=(const rational &v) { return v; }
 
@@ -34,15 +34,15 @@ struct rational
     // values after construction.
 
     rational(T n, T d) :
-        num_{ n }, den_{ d }
+        m_num{ n }, m_den{ d }
     {
-        if (den_ == 0)
+        if (m_den == 0)
             throw invalid_value("zero denominator");
     }
 
   private:
-    const T num_;
-    const T den_;
+    const T m_num;
+    const T m_den;
 };
 
 template <typename T>
