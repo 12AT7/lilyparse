@@ -1,7 +1,5 @@
 #pragma once
 
-#include "generate.hpp"
-
 #include <type_safe/strong_typedef.hpp>
 #include <boost/hana/define_struct.hpp>
 #include <set>
@@ -34,14 +32,14 @@ enum struct pitchclass : std::uint8_t
 
 extern std::map<pitchclass, const char *> const pitchclass_names;
 
-template <>
-struct string_generator<pitchclass>
-{
-    std::string operator()(pitchclass const &v)
-    {
-        return pitchclass_names.at(v);
-    }
-};
+// template <>
+// struct string_generator<pitchclass>
+// {
+//     std::string operator()(pitchclass const &v)
+//     {
+//         return pitchclass_names.at(v);
+//     }
+// };
 
 // An octave is a std::uint8_t, with very limited semantics
 struct octave : ts::strong_typedef<octave, std::uint8_t>,
@@ -64,7 +62,8 @@ struct pitch
                              (stan::pitchclass, m_pitchclass),
                              (stan::octave, m_octave));
 
-    pitch(pitchclass p, octave oct) : m_pitchclass{p}, m_octave{oct} {}
+    pitch(pitchclass p, octave oct) :
+        m_pitchclass{ p }, m_octave{ oct } {}
     staffline get_staffline() const;
 
     friend bool operator<(const pitch &, const pitch &);
@@ -82,5 +81,15 @@ struct valid_pitchclass : std::set<pitchclass>
 {
     valid_pitchclass();
 };
+
+// template <>
+// struct string_generator<pitch>
+// {
+//     std::string operator()(pitch const &v)
+//     {
+// 	    string_generator<pitchclass> genpc;
+//         return genpc(v.m_pitchclass) + std::to_string(static_cast<std::uint8_t>(v.m_octave));
+//     }
+// };
 
 } // namespace stan

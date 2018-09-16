@@ -1,7 +1,6 @@
 #pragma once
 
 #include "rational.hpp"
-#include "generate.hpp"
 #include "exception.hpp"
 
 #include <vector>
@@ -36,13 +35,13 @@ struct value : rational<std::uint16_t>
 
 value dot(const value &v);
 
-template <>
-struct string_generator<value>
-{
-    std::string operator()(value const &v)
-    {
-        return std::to_string(v.den() / (1u << v.dots())) + std::string(v.dots(), '.');
-    }
-};
+// template <>
+// struct string_generator<value>
+// {
+//     std::string operator()(value const &v)
+//     {
+//         return std::to_string(v.den() / (1u << v.dots())) + std::string(v.dots(), '.');
+//     }
+// };
 
 } // namespace stan

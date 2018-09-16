@@ -42,14 +42,14 @@ struct duration : rational<std::uint32_t>
     }
 };
 
-template <>
-struct string_generator<duration>
-{
-    std::string operator()(duration const &d)
-    {
-        duration::integer gcd = d.compute_gcd(d.num(), d.den());
-        return std::to_string(d.num() / gcd) + "/" + std::to_string(d.den() / gcd);
-    }
-};
+// template <>
+// struct string_generator<duration>
+// {
+//     std::string operator()(duration const &d)
+//     {
+//         duration::integer gcd = d.compute_gcd(d.num(), d.den());
+//         return std::to_string(d.num() / gcd) + "/" + std::to_string(d.den() / gcd);
+//     }
+// };
 
 } // namespace stan
