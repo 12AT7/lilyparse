@@ -6,14 +6,14 @@ namespace stan::driver::debug {
 
 struct writer
 {
-    std::string operator()(column const &);
-    std::string operator()(duration const &);
-    std::string operator()(value const &);
-    std::string operator()(note const &);
-    std::string operator()(rest const &);
-    std::string operator()(chord const &);
-    std::string operator()(pitch const &);
-    std::string operator()(std::unique_ptr<column> const &);
+    std::string operator()(column const &) const;
+    std::string operator()(duration const &) const;
+    std::string operator()(value const &) const;
+    std::string operator()(note const &) const;
+    std::string operator()(rest const &) const;
+    std::string operator()(chord const &) const;
+    std::string operator()(pitch const &) const;
+    std::string operator()(std::unique_ptr<column> const &) const;
 
   private:
     // Disable implicit conversions.  This helps avoid both bad error messages
@@ -23,7 +23,9 @@ struct writer
     // is not needed.  It is helpful when developing, though.
 
     template <typename T>
-    std::string operator()(T const &);
+    std::string operator()(T const &) const;
 };
+
+extern writer write;
 
 } // namespace stan::driver::debug

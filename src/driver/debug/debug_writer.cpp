@@ -5,31 +5,33 @@
 
 namespace stan::driver::debug {
 
-std::string writer::operator()(pitch const &r)
+writer write;
+
+std::string writer::operator()(pitch const &r) const
 {
     return fmt::format("{}{}",
                        pitchclass_names.at(r.m_pitchclass),
                        std::to_string(static_cast<std::uint8_t>(r.m_octave)));
 }
 
-std::string writer::operator()(value const &v)
+std::string writer::operator()(value const &v) const
 {
     return std::to_string(v.den() / (1u << v.dots())) + std::string(v.dots(), '.');
 }
 
-std::string writer::operator()(rest const &r)
+std::string writer::operator()(rest const &r) const
 {
     static writer write;
     return fmt::format("r:{}", write(r.m_value));
 }
 
-std::string writer::operator()(note const &r)
+std::string writer::operator()(note const &r) const
 {
     static writer write;
     return fmt::format("{}:{}", write(r.m_pitch), write(r.m_value));
 }
 
-std::string writer::operator()(chord const &r)
+std::string writer::operator()(chord const &r) const
 {
     static writer write;
 
@@ -42,12 +44,12 @@ std::string writer::operator()(chord const &r)
     return fmt::format("<{}>:{}", pitches, write(r.m_value));
 }
 
-std::string writer::operator()(std::unique_ptr<column> const &ptr)
+std::string writer::operator()(std::unique_ptr<column> const &ptr) const
 {
     return operator()(*ptr);
 }
 
-std::string writer::operator()(column const &col)
+std::string writer::operator()(column const &col) const
 {
     static writer write;
     return std::visit([](auto &&v) { return write(v); }, col.m_variant);

@@ -26,7 +26,12 @@ struct rational
     T num() const { return m_num; }
     T den() const { return m_den; }
 
-    rational<T> operator=(const rational &v) { return v; }
+    rational<T> &operator=(const rational &v)
+    {
+        m_num = v.num();
+        m_den = v.den();
+        return *this;
+    }
 
   protected:
     // Make it impossible to contain an arbitrary value by allowing only
@@ -41,8 +46,8 @@ struct rational
     }
 
   private:
-    const T m_num;
-    const T m_den;
+    /*const*/ T m_num;
+    /*const*/ T m_den;
 };
 
 template <typename T>

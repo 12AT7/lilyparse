@@ -67,24 +67,31 @@ struct beam
         m_notes(std::move(n)) {}
 };
 
+using variant = std::variant<rest, note, chord, std::unique_ptr<column>>;
+
 struct column
 {
     std::variant<rest, note, chord, std::unique_ptr<column>> m_variant;
 
-    column(rest &&v) :
+    column(const rest &v) :
         m_variant(v) {}
-    column(note &&v) :
+    column(const note &v) :
         m_variant(v) {}
-    column(chord &&v) :
+    column(const chord &v) :
         m_variant(v) {}
     column(std::unique_ptr<column> &&v) :
         m_variant(std::move(v)) {}
 
-    template <typename T>
-    column(T &&value) :
-        m_variant(value) {}
+    // template <typename T>
+    // column(T &&value) :
+    //     m_variant(value) {}
 
     column(column &&) = default;
+    // column(const column &) = default;
+    // column &operator=(const column &col);
+
+    column(variant &&v) :
+        m_variant(std::move(v)) {}
 
     friend bool operator==(column const &, column const &);
     friend int operator==(column const &, std::unique_ptr<column> const &);
