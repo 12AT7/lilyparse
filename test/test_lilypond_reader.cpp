@@ -15,12 +15,13 @@ mettle::property_suite<> lilypond_suite("lilypond reader", [](auto &_) {
     using stan::value;
     using stan::octave;
     using stan::pitch;
+    using stan::column;
+
+    static stan::note c4{ value::quarter(), pitch{ pc::c, octave{ 4 } } };
 
     _.test("note", []() {
         stan::lilypond::reader read;
-        using stan::note;
 
-        note truth{ value::quarter(), pitch{ pc::c, octave{ 4 } } };
-        expect(read("c4"), equal_to(truth));
+        expect(read("c4"), equal_to<column>(c4));
     });
 });

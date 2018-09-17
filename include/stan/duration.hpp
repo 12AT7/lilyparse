@@ -19,18 +19,7 @@ struct duration : rational<std::uint32_t>
 
     friend struct value;
 
-    // duration(tie &&v)
-    //     : duration(std::accumulate(v.begin(), v.end(), zero(),
-    //           [](const duration &d, value v) { return d + v; }))
-    // {
-    // }
-
-    // static duration zero()
-    // {
-    //     return { 0, 1 };
-    // }
-    //
-    // private:
+  private:
     integer compute_gcd(integer a, integer b) const
     {
         while (b != 0) {
@@ -41,15 +30,5 @@ struct duration : rational<std::uint32_t>
         return a;
     }
 };
-
-// template <>
-// struct string_generator<duration>
-// {
-//     std::string operator()(duration const &d)
-//     {
-//         duration::integer gcd = d.compute_gcd(d.num(), d.den());
-//         return std::to_string(d.num() / gcd) + "/" + std::to_string(d.den() / gcd);
-//     }
-// };
 
 } // namespace stan

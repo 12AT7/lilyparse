@@ -9,16 +9,12 @@ namespace stan::lilypond {
 struct writer
 {
     template <typename T>
-    std::string operator()(const T&);
+    std::string operator()(const T &);
 };
-
-// template <typename Event>
-//Event
-column parse(const std::string&);
 
 struct reader
 {
-    column operator()(const std::string&);
+    column operator()(const std::string &);
 };
 
 } // namespace stan::lilypond

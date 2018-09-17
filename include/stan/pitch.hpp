@@ -32,15 +32,6 @@ enum struct pitchclass : std::uint8_t
 
 extern std::map<pitchclass, const char *> const pitchclass_names;
 
-// template <>
-// struct string_generator<pitchclass>
-// {
-//     std::string operator()(pitchclass const &v)
-//     {
-//         return pitchclass_names.at(v);
-//     }
-// };
-
 // An octave is a std::uint8_t, with very limited semantics
 struct octave : ts::strong_typedef<octave, std::uint8_t>,
                 ts::strong_typedef_op::addition<octave>,
@@ -67,7 +58,7 @@ struct pitch
     staffline get_staffline() const;
 
     friend bool operator<(const pitch &, const pitch &);
-    friend bool operator==(const pitch &, const pitch &);
+    friend int operator==(const pitch &, const pitch &);
 };
 
 // Enumerating all of valid pitchclasses is useful, especially in testing, but
@@ -81,15 +72,5 @@ struct valid_pitchclass : std::set<pitchclass>
 {
     valid_pitchclass();
 };
-
-// template <>
-// struct string_generator<pitch>
-// {
-//     std::string operator()(pitch const &v)
-//     {
-// 	    string_generator<pitchclass> genpc;
-//         return genpc(v.m_pitchclass) + std::to_string(static_cast<std::uint8_t>(v.m_octave));
-//     }
-// };
 
 } // namespace stan
