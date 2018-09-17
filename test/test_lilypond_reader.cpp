@@ -23,9 +23,6 @@ mettle::property_suite<> lilypond_suite("lilypond reader", [](auto &_) {
 
     _.property("note", [](stan::note n) {
         std::string lily = write(n);
-        std::cout << lily << std::endl;
-        column c = read(lily);
-        std::cout << "column: " << write(c) << std::endl;
         expect(read(lily), equal_to(n));
     });
 });

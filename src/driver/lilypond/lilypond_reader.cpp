@@ -19,7 +19,7 @@ struct value : stan::value
     value() :
         stan::value(stan::value::whole()) {}
     value(const stan::value &v) :
-        stan::value(v) { std::cout << "copy value " << driver::debug::write(v) << " " << driver::debug::write(stan::value(*this)) << std::endl; }
+        stan::value(v) {}
 };
 
 struct pitch : stan::pitch
@@ -75,19 +75,6 @@ struct transform_attribute<std::variant<Ts...>, boost::variant<Ts...>, x3::parse
     static void post(exposed_type &ev, const type &bv)
     {
         ev = boost::apply_visitor([](auto &&n) -> exposed_type { return std::move(n); }, bv);
-    }
-};
-
-template <>
-struct make_attribute<stan::variant, stan::variant>
-{
-    using type = stan::variant;
-    using value_type = stan::variant;
-
-    template <typename T>
-    static void call(T value)
-    {
-        // return value;
     }
 };
 
@@ -233,43 +220,26 @@ struct value_tag
 
 auto to_pitch = [](auto &ctx) { _val(ctx) = stan::pitch{ at_c<0>(_attr(ctx)), at_c<1>(_attr(ctx)) }; };
 auto to_value = [](auto &ctx) {
-    // lilypond::value &v = _val(ctx);
-    // stan::value vv = v;
-    // std::cout << "got value " << driver::debug::write(vv) << std::endl;
-    // std::cout << "got value " << stan::value(at_c<0>(_attr(ctx))).num() << std::endl;
     _val(ctx) = lilypond::value(at_c<0>(_attr(ctx)));
     int dots = boost::get<int>(at_c<1>(_attr(ctx)));
-    for (auto i = 0; i < dots; ++i)
+    for (auto i = 0; i < dots; ++i) {
         _val(ctx) = dot(_val(ctx));
-
-    std::cout << "to value " << driver::debug::write(stan::value(_val(ctx))) << std::endl;
+    }
 };
 
 auto to_rest = [](auto &ctx) {
     _val(ctx) = stan::rest{ _attr(ctx) };
-    // std::cout << "got rest " << driver::debug::write(stan::rest{ _val(ctx) }) << std::endl;
 };
 auto to_note = [](auto &ctx) {
     _val(ctx) = stan::note{ at_c<1>(_attr(ctx)), at_c<0>(_attr(ctx)) };
-    // std::cout << "got note " << driver::debug::write(stan::note{ _val(ctx) }) << std::endl;
 };
-// stan::pitch{ pitchclass::c, stan::octave{ 4 } } }; };
-auto print_column = [](auto &ctx) {
-    // std::cout << "got column " << driver::debug::write(stan::column{ _attr(ctx) }) << std::endl;
-    // _val(ctx) = stan::column{ _attr(ctx) };
-    // const stan::column &ev = _val(ctx);
-    // std::cout << "to column " << driver::debug::write(_val(ctx)) << std::endl;
-    // return stan::column{ _attr(ctx) };
-};
-
 auto const prest_def = pvalue[to_rest];
 auto const pnote_def = (ppitch >> pvalue)[to_note];
 auto const ppitch_def = (pitchclass >> poctave)[to_pitch];
 auto const pvalue_def = (basevalue >> (dotvalue | attr(int(0))))[to_value];
 // auto const chord_body_def = (lit('<') >> +ppitch >> '>' >> pvalue);
 
-//auto unique = [](auto& ctx) { /* _val(ctx) = stan::column::adapt(_attr(ctx)); */ };
-auto const column_def = (prest | pnote); //[print_column]; //(note)[unique];
+auto const column_def = (prest | pnote);
 // auto const variant_def = note | chord_body | key | meter | clef ;
 // auto const music_list_def = lit('{') >> +variant >> '}';
 
