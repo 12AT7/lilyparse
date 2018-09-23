@@ -21,19 +21,19 @@ template <typename T>
 auto default_value = T{};
 
 template <>
-static const auto default_value<stan::pitch> = stan::pitch{ stan::pitchclass::c, stan::octave{ 4 } };
+const auto default_value<stan::pitch> = stan::pitch{ stan::pitchclass::c, stan::octave{ 4 } };
 
 template <>
-static const auto default_value<stan::value> = stan::value::quarter();
+const auto default_value<stan::value> = stan::value::quarter();
 
 template <>
-static const auto default_value<stan::rest> = stan::rest{ default_value<stan::value> };
+const auto default_value<stan::rest> = stan::rest{ default_value<stan::value> };
 
 template <>
-static const auto default_value<stan::note> = stan::note{ default_value<stan::value>, default_value<stan::pitch> };
+const auto default_value<stan::note> = stan::note{ default_value<stan::value>, default_value<stan::pitch> };
 
 template <>
-static const auto default_value<stan::chord> = stan::chord{ default_value<stan::value>, std::vector<stan::pitch>{ default_value<stan::pitch> } };
+const auto default_value<stan::chord> = stan::chord{ default_value<stan::value>, std::vector<stan::pitch>{ default_value<stan::pitch> } };
 
 } // namespace stan
 
@@ -48,31 +48,31 @@ namespace boost::spirit::x3::traits {
 // updated to replace boost::variant<> with std::variant<> under the covers,
 // this specialization may be removed.
 
-template <typename... Ts>
-struct transform_attribute<std::variant<Ts...>, boost::variant<Ts...>, x3::parser_id>
-{
-    using type = boost::variant<Ts...>;
-    using exposed_type = std::variant<Ts...>;
-
-    static type pre(const exposed_type &ev) { return std::move(type()); }
-
-    static void post(exposed_type &ev, const type &bv)
-    {
-        ev = boost::apply_visitor([](auto &&n) -> exposed_type { return std::move(n); }, bv);
-    }
-};
+// template <typename... Ts>
+// struct transform_attribute<std::variant<Ts...>, boost::variant<Ts...>, x3::parser_id>
+// {
+//     using type = boost::variant<Ts...>;
+//     using exposed_type = std::variant<Ts...>;
+//
+//     static type pre(const exposed_type &ev) { return std::move(type()); }
+//
+//     static void post(exposed_type &ev, const type &bv)
+//     {
+//         ev = boost::apply_visitor([](auto &&n) -> exposed_type { return std::move(n); }, bv);
+//     }
+// };
 
 } // namespace boost::spirit::x3::traits
 
 // Metaprogram to compute a boost::variant<> from std::variant<>.
-template <typename T>
-struct std_variant_to_boost;
-
-template <typename... Ts>
-struct std_variant_to_boost<std::variant<Ts...>>
-{
-    using type = boost::variant<Ts...>;
-};
+// template <typename T>
+// struct std_variant_to_boost;
+//
+// template <typename... Ts>
+// struct std_variant_to_boost<std::variant<Ts...>>
+// {
+//     using type = boost::variant<Ts...>;
+// };
 
 namespace x3 = boost::spirit::x3;
 
@@ -271,11 +271,6 @@ parse(const std::string &lily)
     auto parse = x3::with<value_tag>(std::ref(run)) [rule.value()];
 #endif
     // Now that the appropriate rule is discovered, use it to parse an Event
-    // stan::pitch p{ pitchclass::g, stan::octave{ 2 } };
-    // struct column ev
-    // {
-    //     stan::note { stan::value::quarter(), p }
-    // };
     variant2 ev = stan::rest(stan::value::quarter());
     auto iter = lily.begin();
     if (!x3::phrase_parse(iter, lily.end(), column, x3::space, ev)) {
