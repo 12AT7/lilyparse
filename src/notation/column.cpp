@@ -25,13 +25,11 @@ int operator==(const chord &c1, const chord &c2)
 
 bool operator==(const column &c1, const column &c2)
 {
-    stan::driver::debug::writer write;
     return c1.m_variant == c2.m_variant;
 }
 
 bool operator==(std::unique_ptr<column> const &c1, std::unique_ptr<column> const &c2)
 {
-    stan::driver::debug::writer write;
     return c1->m_variant == c2->m_variant;
 }
 

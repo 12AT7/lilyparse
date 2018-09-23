@@ -44,16 +44,6 @@ const std::map<pitchclass, const char *> pitchclass_names = {
     { pitchclass::bss, "bss" }
 };
 
-std::string to_string(pitchclass p)
-{
-    auto it = pitchclass_names.find(p);
-    if (it == pitchclass_names.end()) {
-        throw exception(R"(cannot print invalid pitchclass {})",
-                        static_cast<std::uint8_t>(p));
-    }
-    return it->second;
-}
-
 valid_pitchclass::valid_pitchclass()
 {
     for (auto [key, value] : pitchclass_names) {
