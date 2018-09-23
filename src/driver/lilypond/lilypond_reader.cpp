@@ -14,45 +14,80 @@
 
 namespace stan::lilypond {
 
-struct value : stan::value
+// struct value : stan::value
+// {
+//     value() :
+//         stan::value(stan::value::whole()) {}
+//     value(const stan::value &v) :
+//         stan::value(v) {}
+// };
+
+// Stan is designed with extensive safety features that make it impossible to
+// construct invalid musical objects.  Most of this is static safety, including
+// the lack of default constructors.  Lacking default constructors for the data
+// model, Spirit X3 becomes very sad.  Instead of breaking the safety features
+// for all of stan, here we will just bolt on default constructors in this file
+// only.  This is still pretty safe, because X3 won't allow invalid values to
+// be parsed (that is it's purpose).
+
+template <typename T>
+auto default_value = T{};
+
+template <>
+static const auto default_value<stan::pitch> = stan::pitch{ stan::pitchclass::c, stan::octave{ 4 } };
+
+template <>
+static const auto default_value<stan::value> = stan::value::quarter();
+
+template <>
+static const auto default_value<stan::rest> = stan::rest{ default_value<stan::value> };
+
+template <>
+static const auto default_value<stan::note> = stan::note{ default_value<stan::value>, default_value<stan::pitch> };
+
+template <>
+static const auto default_value<stan::chord> = stan::chord{ default_value<stan::value>, std::vector<stan::pitch>{ default_value<stan::pitch> } };
+
+template <typename T>
+struct default_ctor : T
 {
-    value() :
-        stan::value(stan::value::whole()) {}
-    value(const stan::value &v) :
-        stan::value(v) {}
+    default_ctor() :
+        T{ default_value<T> } {}
+    default_ctor(const T &v) :
+        T{ v } {}
 };
 
-struct pitch : stan::pitch
-{
-    pitch() :
-        stan::pitch(stan::pitchclass::d, stan::octave{ 5 }) {}
-    pitch(const stan::pitch &v) :
-        stan::pitch(v) {}
-};
+// struct pitch : stan::pitch
+// {
+//     pitch() :
+//         stan::pitch(stan::pitchclass::d, stan::octave{ 5 }) {}
+//     pitch(const stan::pitch &v) :
+//         stan::pitch(v) {}
+// };
 
-struct note : stan::note
-{
-    note() :
-        stan::note(stan::value::half(), { stan::pitchclass::e, stan::octave{ 3 } }) {}
-    note(stan::note &&v) :
-        stan::note(v) {}
-};
+// struct note : stan::note
+// {
+//     note() :
+//         stan::note(stan::value::half(), { stan::pitchclass::e, stan::octave{ 3 } }) {}
+//     note(stan::note &&v) :
+//         stan::note(v) {}
+// };
 
-struct chord : stan::chord
-{
-    chord() :
-        stan::chord(stan::value::half(), { { stan::pitchclass::c, stan::octave{ 4 } } }) {}
-    chord(stan::chord &&v) :
-        stan::chord(v) {}
-};
+// struct chord : stan::chord
+// {
+//     chord() :
+//         stan::chord(stan::value::half(), std::vector<stan::pitch>{ { stan::pitchclass::c, stan::octave{ 4 } } }) {}
+//     chord(stan::chord &&v) :
+//         stan::chord(v) {}
+// };
 
-struct rest : stan::rest
-{
-    rest() :
-        stan::rest(stan::value::half()) {}
-    rest(stan::rest &&v) :
-        stan::rest(v) {}
-};
+// struct rest : stan::rest
+// {
+//     rest() :
+//         stan::rest(stan::value::half()) {}
+//     rest(stan::rest &&v) :
+//         stan::rest(v) {}
+// };
 
 // struct column : stan::column
 // {
@@ -104,11 +139,11 @@ struct std_variant_to_boost<std::variant<Ts...>>
 // a way to metaprogram the hana->fusion structures automatically, but the
 // expedient way forward is just these set of macros that (sadly) must be
 // manually maintained.
-BOOST_FUSION_ADAPT_STRUCT(stan::pitch, m_pitchclass, m_octave);
+// BOOST_FUSION_ADAPT_STRUCT(stan::pitch, m_pitchclass, m_octave);
 // BOOST_FUSION_ADAPT_STRUCT(stan::value, base, dots);
-BOOST_FUSION_ADAPT_STRUCT(stan::rest, m_value);
-BOOST_FUSION_ADAPT_STRUCT(stan::note, m_value, m_pitch);
-BOOST_FUSION_ADAPT_STRUCT(stan::chord, m_value, m_pitches);
+// BOOST_FUSION_ADAPT_STRUCT(stan::rest, m_value);
+// BOOST_FUSION_ADAPT_STRUCT(stan::note, m_value, m_pitch);
+// BOOST_FUSION_ADAPT_STRUCT(stan::chord, m_value, m_pitches);
 // BOOST_FUSION_ADAPT_STRUCT(stan::key, pitchclass, mode);
 // BOOST_FUSION_ADAPT_STRUCT(stan::meter, beats, value);
 
@@ -138,7 +173,7 @@ struct pitchclass_ : x3::symbols<stan::pitchclass>
     }
 } pitchclass;
 
-struct basevalue_ : x3::symbols<value>
+struct basevalue_ : x3::symbols<default_ctor<stan::value>>
 {
     basevalue_()
     {
@@ -156,13 +191,13 @@ struct basevalue_ : x3::symbols<value>
     }
 } basevalue;
 
-struct dotvalue_ : x3::symbols<int>
-{
-    dotvalue_()
-    {
-        add(".", int{ 1 })("..", int{ 2 });
-    };
-} dotvalue;
+// struct dotvalue_ : x3::symbols<int>
+// {
+//     dotvalue_()
+//     {
+//         add(".", int{ 1 })("..", int{ 2 });
+//     };
+// } dotvalue;
 
 // struct clef_ : x3::symbols<stan::clef> {
 //     clef_() {
@@ -193,13 +228,13 @@ using x3::repeat;
 using x3::string;
 using x3::ushort_;
 
-x3::rule<struct ppitch, pitch> ppitch = "pitch";
+x3::rule<struct ppitch, default_ctor<pitch>> ppitch = "pitch";
 x3::rule<struct poctave, stan::octave> poctave = "octave";
-x3::rule<struct pvalue, value> pvalue = "value";
-x3::rule<struct prest, rest> prest = "rest";
-x3::rule<struct pnote, note> pnote = "note";
-x3::rule<struct pchord, chord> pchord = "chord";
-using variant2 = boost::variant<lilypond::rest, lilypond::note, lilypond::chord>;
+x3::rule<struct pvalue, default_ctor<stan::value>> pvalue = "value";
+x3::rule<struct prest, default_ctor<rest>> prest = "rest";
+x3::rule<struct pnote, default_ctor<stan::note>> pnote = "note";
+x3::rule<struct pchord, default_ctor<chord>> pchord = "chord";
+using variant2 = boost::variant<stan::rest, stan::note, stan::chord>;
 x3::rule<struct pcolumn, variant2> column = "column";
 // x3::rule<struct variant, std::variant_to_boost<stan::variant>::type> variant = "variant";
 // x3::rule<struct music_list, stan::sequential> music_list = "music_list";
@@ -227,36 +262,60 @@ struct value_tag
 // auto const note_def = note %= pitch >>
 //    (value/*[store_running_value]*/ | attr(stan::value::quarter())/*[use_running_value]*/);
 
-auto to_pitch = [](auto &ctx) {
-    _val(ctx) = stan::pitch{ at_c<0>(_attr(ctx)), at_c<1>(_attr(ctx)) };
-};
-auto to_value = [](auto &ctx) {
-    _val(ctx) = lilypond::value(at_c<0>(_attr(ctx)));
-    int dots = boost::get<int>(at_c<1>(_attr(ctx)));
-    for (auto i = 0; i < dots; ++i) {
-        _val(ctx) = dot(_val(ctx));
+// auto to_pitch = [](auto &ctx) {
+//     _val(ctx) = stan::pitch{ at_c<0>(_attr(ctx)), at_c<1>(_attr(ctx)) };
+// };
+// auto to_value = [](auto &ctx) {
+//     _val(ctx) = lilypond::value(at_c<0>(_attr(ctx)));
+//     int dots = boost::get<int>(at_c<1>(_attr(ctx)));
+//     for (auto i = 0; i < dots; ++i) {
+//         _val(ctx) = dot(_val(ctx));
+//     }
+// };
+
+template <typename T, int... ArgOrder>
+struct construct
+{
+    template <typename Context>
+    void operator()(Context &ctx)
+    {
+        x3::_val(ctx) = T{ at_c<ArgOrder>(x3::_attr(ctx))... };
     }
 };
 
-auto to_rest = [](auto &ctx) {
-    _val(ctx) = stan::rest{ _attr(ctx) };
+template <typename T>
+struct construct<T>
+{
+    template <typename Context>
+    void operator()(Context &ctx)
+    {
+        x3::_val(ctx) = T{ x3::_attr(ctx) };
+    }
 };
-auto to_note = [](auto &ctx) {
-    _val(ctx) = stan::note{ at_c<1>(_attr(ctx)), at_c<0>(_attr(ctx)) };
-};
-auto to_chord = [](auto &ctx) {
-    std::vector<stan::pitch> pitches;
-    auto p = at_c<0>(_attr(ctx));
-    std::copy(p.begin(), p.end(), std::back_inserter(pitches));
-    _val(ctx) = stan::chord{ at_c<1>(_attr(ctx)), pitches };
-};
-auto const prest_def = x3::lit('r') >> pvalue[to_rest];
-auto const pnote_def = (ppitch >> pvalue)[to_note];
-auto const ppitch_def = (pitchclass >> poctave)[to_pitch];
-auto const pvalue_def = (basevalue >> (dotvalue | attr(int(0))))[to_value];
-auto const pchord_def = ('<' >> +ppitch >> '>' >> pvalue)[to_chord];
 
-auto const column_def = (prest | pnote | pchord);
+// auto to_rest = [](auto &ctx) {
+//     _val(ctx) = stan::rest{ _attr(ctx) };
+// };
+// auto to_note = [](auto &ctx) {
+//     _val(ctx) = stan::note{ at_c<1>(_attr(ctx)), at_c<0>(_attr(ctx)) };
+// };
+// auto to_chord = [](auto &ctx) {
+//     std::vector<stan::pitch> pitches;
+//     auto p = at_c<0>(_attr(ctx));
+//     std::copy(p.begin(), p.end(), std::back_inserter(pitches));
+//     _val(ctx) = stan::chord{ at_c<1>(_attr(ctx)), pitches };
+// };
+auto const prest_def = x3::lit('r') >> pvalue[construct<rest>()];
+auto const pnote_def = (ppitch >> pvalue)[construct<stan::note, 1, 0>()];
+auto const ppitch_def = (pitchclass >> poctave)[construct<stan::pitch, 0, 1>()];
+// auto const pvalue_def = (basevalue >> (dotvalue | attr(int(0))))[construct<stan::value, 0>()];
+
+auto add_dot = [](auto &ctx) { _val(ctx) = dot(_val(ctx)); };
+
+auto const pvalue_def = basevalue[construct<stan::value>()] >> x3::repeat(0, 2)[lit('.')[add_dot]];
+auto const pchord_def = ('<' >> +ppitch >> '>' >> pvalue)[construct<stan::chord, 1, 0>()];
+
+auto const column_def = prest | pnote | pchord;
 // auto const variant_def = note | chord_body | key | meter | clef ;
 // auto const music_list_def = lit('{') >> +variant >> '}';
 

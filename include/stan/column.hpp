@@ -39,12 +39,14 @@ struct chord
                              (value, m_value),
                              (std::vector<pitch>, m_pitches));
 
-    chord(const value &v, const std::vector<pitch> &p) :
-        m_value(v), m_pitches(p)
+    template <typename PitchContainer>
+    chord(const value &v, const PitchContainer &p) :
+        m_value(v)
     {
         if (p.empty())
             throw invalid_value("chords must have at least one pitch");
 
+        std::copy(p.begin(), p.end(), std::back_inserter(m_pitches));
         std::sort(m_pitches.begin(), m_pitches.end());
         m_pitches.erase(std::unique(m_pitches.begin(), m_pitches.end()), m_pitches.end());
 
