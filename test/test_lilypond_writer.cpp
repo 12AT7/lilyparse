@@ -98,8 +98,10 @@ mettle::property_suite<> lilypond_suite("lilypond writer", [](auto &_) {
     });
 
     _.property("note", [](stan::note n) {
-        // Values and pitches are arleady tested exhaustively, so here
-        // we check that any possible note writes as a combination of those.
+        // Values and pitches are arleady tested exhaustively, so here we check
+        // that any possible note writes as a combination of those.
+        // Correctness will be further checked in test_lilypond_reader, where
+        // the test knows the correct answer.
         expect(write(n), equal_to(write(n.m_pitch) + write(n.m_value)));
     });
 });

@@ -38,6 +38,14 @@ struct note : stan::note
         stan::note(v) {}
 };
 
+struct chord : stan::chord
+{
+    chord() :
+        stan::chord(stan::value::half(), { { stan::pitchclass::c, stan::octave{ 4 } } }) {}
+    chord(stan::chord &&v) :
+        stan::chord(v) {}
+};
+
 struct rest : stan::rest
 {
     rest() :
@@ -98,8 +106,9 @@ struct std_variant_to_boost<std::variant<Ts...>>
 // manually maintained.
 BOOST_FUSION_ADAPT_STRUCT(stan::pitch, m_pitchclass, m_octave);
 // BOOST_FUSION_ADAPT_STRUCT(stan::value, base, dots);
+BOOST_FUSION_ADAPT_STRUCT(stan::rest, m_value);
 BOOST_FUSION_ADAPT_STRUCT(stan::note, m_value, m_pitch);
-// BOOST_FUSION_ADAPT_STRUCT(stan::chord, m_value, m_pitches);
+BOOST_FUSION_ADAPT_STRUCT(stan::chord, m_value, m_pitches);
 // BOOST_FUSION_ADAPT_STRUCT(stan::key, pitchclass, mode);
 // BOOST_FUSION_ADAPT_STRUCT(stan::meter, beats, value);
 
@@ -189,8 +198,8 @@ x3::rule<struct poctave, stan::octave> poctave = "octave";
 x3::rule<struct pvalue, value> pvalue = "value";
 x3::rule<struct prest, rest> prest = "rest";
 x3::rule<struct pnote, note> pnote = "note";
-// x3::rule<struct chord_body, stan::chord> chord_body = "chord_body";
-using variant2 = boost::variant<lilypond::rest, lilypond::note>;
+x3::rule<struct pchord, chord> pchord = "chord";
+using variant2 = boost::variant<lilypond::rest, lilypond::note, lilypond::chord>;
 x3::rule<struct pcolumn, variant2> column = "column";
 // x3::rule<struct variant, std::variant_to_boost<stan::variant>::type> variant = "variant";
 // x3::rule<struct music_list, stan::sequential> music_list = "music_list";
@@ -218,7 +227,9 @@ struct value_tag
 // auto const note_def = note %= pitch >>
 //    (value/*[store_running_value]*/ | attr(stan::value::quarter())/*[use_running_value]*/);
 
-auto to_pitch = [](auto &ctx) { _val(ctx) = stan::pitch{ at_c<0>(_attr(ctx)), at_c<1>(_attr(ctx)) }; };
+auto to_pitch = [](auto &ctx) {
+    _val(ctx) = stan::pitch{ at_c<0>(_attr(ctx)), at_c<1>(_attr(ctx)) };
+};
 auto to_value = [](auto &ctx) {
     _val(ctx) = lilypond::value(at_c<0>(_attr(ctx)));
     int dots = boost::get<int>(at_c<1>(_attr(ctx)));
@@ -233,13 +244,19 @@ auto to_rest = [](auto &ctx) {
 auto to_note = [](auto &ctx) {
     _val(ctx) = stan::note{ at_c<1>(_attr(ctx)), at_c<0>(_attr(ctx)) };
 };
-auto const prest_def = pvalue[to_rest];
+auto to_chord = [](auto &ctx) {
+    std::vector<stan::pitch> pitches;
+    auto p = at_c<0>(_attr(ctx));
+    std::copy(p.begin(), p.end(), std::back_inserter(pitches));
+    _val(ctx) = stan::chord{ at_c<1>(_attr(ctx)), pitches };
+};
+auto const prest_def = x3::lit('r') >> pvalue[to_rest];
 auto const pnote_def = (ppitch >> pvalue)[to_note];
 auto const ppitch_def = (pitchclass >> poctave)[to_pitch];
 auto const pvalue_def = (basevalue >> (dotvalue | attr(int(0))))[to_value];
-// auto const chord_body_def = (lit('<') >> +ppitch >> '>' >> pvalue);
+auto const pchord_def = ('<' >> +ppitch >> '>' >> pvalue)[to_chord];
 
-auto const column_def = (prest | pnote);
+auto const column_def = (prest | pnote | pchord);
 // auto const variant_def = note | chord_body | key | meter | clef ;
 // auto const music_list_def = lit('{') >> +variant >> '}';
 
@@ -250,6 +267,7 @@ BOOST_SPIRIT_DEFINE(poctave)
 BOOST_SPIRIT_DEFINE(pvalue)
 BOOST_SPIRIT_DEFINE(prest)
 BOOST_SPIRIT_DEFINE(pnote)
+BOOST_SPIRIT_DEFINE(pchord)
 BOOST_SPIRIT_DEFINE(column)
 
 // auto construct_key = [](auto& ctx) {
@@ -276,9 +294,9 @@ BOOST_SPIRIT_DEFINE(column)
 stan::column
 parse(const std::string &lily)
 {
-    // Define a boolean predicate to detect if a parsing rule, such as
-    // parse::voice, returns at attribute of type Event (true) or something
-    // else (false).
+// Define a boolean predicate to detect if a parsing rule, such as
+// parse::voice, returns at attribute of type Event (true) or something
+// else (false).
 #if 0
     auto has_Event_attribute = [](auto rule) {
         using Attr = typename decltype(rule)::attribute_type;
@@ -292,7 +310,6 @@ parse(const std::string &lily)
     stan::value run = stan::value::quarter();
     auto parse = x3::with<value_tag>(std::ref(run)) [rule.value()];
 #endif
-
     // Now that the appropriate rule is discovered, use it to parse an Event
     // stan::pitch p{ pitchclass::g, stan::octave{ 2 } };
     // struct column ev

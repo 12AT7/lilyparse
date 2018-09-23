@@ -39,7 +39,7 @@ template <>
 std::string writer::operator()<rest>(const rest &v)
 {
     writer write;
-    return fmt::format("r:{}", write(v.m_value));
+    return fmt::format("r{}", write(v.m_value));
 }
 
 template <>
@@ -57,9 +57,9 @@ std::string writer::operator()<chord>(chord const &r)
     std::string pitches = std::accumulate(
         r.m_pitches.begin(),
         r.m_pitches.end(),
-        std::string(" "),
-        [](std::string res, pitch p) { return res + write(p); });
-
+        std::string(),
+        [](std::string res, pitch p) { return res + write(p) + " "; });
+    pitches.resize(pitches.size() - 1);
     return fmt::format("<{}>{}", pitches, write(r.m_value));
 }
 

@@ -5,6 +5,7 @@
 #include <stan/column.hpp>
 
 #include <rapidcheck.h>
+#include "rapidcheck/shrinkable/Create.hpp"
 
 namespace rc {
 
@@ -56,9 +57,28 @@ struct Arbitrary<note>
     static Gen<note> arbitrary()
     {
         return gen::construct<note>(
-                gen::arbitrary<value>(),
-                gen::arbitrary<pitch>()
-                );
+            gen::arbitrary<value>(),
+            gen::arbitrary<pitch>());
+    };
+};
+
+template <>
+struct Arbitrary<rest>
+{
+    static Gen<rest> arbitrary()
+    {
+        return gen::construct<rest>(gen::arbitrary<value>());
+    };
+};
+
+template <>
+struct Arbitrary<chord>
+{
+    static Gen<chord> arbitrary()
+    {
+        return gen::construct<chord>(
+            gen::arbitrary<value>(),
+            gen::nonEmpty(gen::unique<std::vector<pitch>>(gen::arbitrary<pitch>())));
     };
 };
 

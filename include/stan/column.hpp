@@ -40,7 +40,17 @@ struct chord
                              (std::vector<pitch>, m_pitches));
 
     chord(const value &v, const std::vector<pitch> &p) :
-        m_value(v), m_pitches(p) {}
+        m_value(v), m_pitches(p)
+    {
+        if (p.empty())
+            throw invalid_value("chords must have at least one pitch");
+
+        std::sort(m_pitches.begin(), m_pitches.end());
+        m_pitches.erase(std::unique(m_pitches.begin(), m_pitches.end()), m_pitches.end());
+
+        if (m_pitches.size() != p.size())
+            throw invalid_value("chords must all unique pitches");
+    }
 
     friend int operator==(chord const &, chord const &);
 };
@@ -82,13 +92,7 @@ struct column
     column(std::unique_ptr<column> &&v) :
         m_variant(std::move(v)) {}
 
-    // template <typename T>
-    // column(T &&value) :
-    //     m_variant(value) {}
-
     column(column &&) = default;
-    // column(const column &) = default;
-    // column &operator=(const column &col);
 
     column(variant &&v) :
         m_variant(std::move(v)) {}
