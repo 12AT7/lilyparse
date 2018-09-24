@@ -44,6 +44,32 @@ std::string writer::operator()(chord const &r) const
     return fmt::format("<{}>:{}", pitches, write(r.m_value));
 }
 
+std::string writer::operator()(beam const &r) const
+{
+    static writer write;
+
+    std::string elements = std::accumulate(
+        r.m_elements.begin(),
+        r.m_elements.end(),
+        std::string(),
+        [](std::string res, const auto &p) { return res + write(p) + " "; });
+    elements.resize(elements.size() - 1);
+    return fmt::format("[{}]", elements);
+}
+
+std::string writer::operator()(tuplet const &r) const
+{
+    static writer write;
+
+    std::string elements = std::accumulate(
+        r.m_elements.begin(),
+        r.m_elements.end(),
+        std::string(),
+        [](std::string res, const auto &p) { return res + write(p) + " "; });
+    elements.resize(elements.size() - 1);
+    return fmt::format("{{{}}}:{}]", elements, write(r.m_value));
+}
+
 std::string writer::operator()(std::unique_ptr<column> const &ptr) const
 {
     return operator()(*ptr);

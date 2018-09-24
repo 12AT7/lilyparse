@@ -8,12 +8,43 @@
 #include <variant>
 #include <memory>
 
+#include <boost/variant.hpp>
+
 namespace stan {
+
+// Because voice elements can nest, such as notes and chords being elements of
+// beams and tuplets in addition to valid voice elements by themselves, the
+// std::variant<> modeling voice elements must be able to contain other
+// instances of itself.  In the Boost days, this was done using a class
+// boost::recursive_variant<>.  With std::variant<>, we have to put nested
+// instances in a std::unique_ptr<column> as a basic requirement that in staff
+// music notation columns can nest, but in std::variant<> they cannot.  Not a
+// big deal, except that std::unique_ptr<column> is *move only*.
+//
+// This ultimately results in column being move-only, causing intense pain in
+// the construction and copying of these objects, with Spirit X3 (in
+// lilypond_reader.cpp) and the C++ programmer both sad and howling in agony.
+//
+// Well, at least the implementation should be fast...
+
+template <typename T>
+auto default_value = T{};
+
+template <typename T>
+struct default_ctor : T
+{
+    default_ctor() :
+        T{ stan::default_value<T> } {}
+    default_ctor(const T &v) :
+        T{ v }
+    {
+        std::cout << "construct ctor " << typeid(T).name() << std::endl;
+    }
+};
 
 struct rest
 {
-    BOOST_HANA_DEFINE_STRUCT(rest,
-                             (value, m_value));
+    BOOST_HANA_DEFINE_STRUCT(rest, (value, m_value));
 
     rest(const value &v) :
         m_value(v) {}
@@ -63,27 +94,77 @@ struct tuplet
 {
     BOOST_HANA_DEFINE_STRUCT(tuplet,
                              (value, m_value),
-                             (std::vector<column>, m_notes));
+                             (std::vector<column>, m_elements));
 
-    tuplet(const value &v, std::vector<column> &&n) :
-        m_value(v), m_notes(std::move(n)) {}
-    tuplet(tuplet &&) = default;
+    template <typename Container>
+    tuplet(const value &v, Container &&n) :
+        m_value(v)
+    {
+        std::move(n.begin(), n.end(), std::back_inserter(m_elements));
+        if (m_elements.size() < 2)
+            throw invalid_value("tuplets must have at least two elements");
+    }
+
+    template <typename... VoiceElement>
+    tuplet(const value &v, VoiceElement &&... element) :
+        m_value(v)
+    {
+        (m_elements.push_back(element), ...);
+        if (m_elements.size() < 2)
+            throw invalid_value("tuplets must have at least two elements");
+    }
+
+    friend int operator==(tuplet const &, tuplet const &);
+};
+
+struct copy_variant
+{
+    template <typename T>
+    auto operator()(const T &v) const -> decltype(column{ v });
+
+    column operator()(const std::unique_ptr<column> &v) const;
+
+    column operator()(const column &v) const;
+
+    template <typename... Ts>
+    column operator()(const boost::variant<Ts...> &v) const;
+
+    template <typename... Ts>
+    column operator()(const std::variant<Ts...> &v) const;
+
+    template <typename T>
+    column operator()(const default_ctor<T> &v) const;
 };
 
 struct beam
 {
-    BOOST_HANA_DEFINE_STRUCT(beam,
-                             (std::vector<column>, m_notes));
+    BOOST_HANA_DEFINE_STRUCT(beam, (std::vector<column>, m_elements));
 
-    beam(std::vector<column> &&n) :
-        m_notes(std::move(n)) {}
+    template <typename ElementContainer>
+    beam(const ElementContainer &n)
+    {
+        std::move(n.begin(), n.end(), std::back_inserter(m_elements));
+
+        if (m_elements.size() < 2)
+            throw invalid_value("beams must have at least two elements");
+    }
+
+    template <typename... VoiceElement>
+    beam(VoiceElement &&... element)
+    {
+        (m_elements.emplace_back(element), ...);
+        if (m_elements.size() < 2)
+            throw invalid_value("beams must have at least two elements");
+    }
+
+    friend int operator==(beam const &, beam const &);
 };
 
-using variant = std::variant<rest, note, chord, std::unique_ptr<column>>;
+using variant = std::variant<rest, note, chord, beam, tuplet, std::unique_ptr<column>>;
 
 struct column
 {
-    std::variant<rest, note, chord, std::unique_ptr<column>> m_variant;
+    variant m_variant;
 
     column(const rest &v) :
         m_variant(v) {}
@@ -91,18 +172,39 @@ struct column
         m_variant(v) {}
     column(const chord &v) :
         m_variant(v) {}
+    column(const beam &v) :
+        m_variant(copy_variant()(v)) {}
+    column(const tuplet &v) :
+        m_variant(copy_variant()(v)) {}
     column(std::unique_ptr<column> &&v) :
         m_variant(std::move(v)) {}
 
-    column(column &&) = default;
+    column(const column &c);
+    column operator=(const column &c);
 
-    column(variant &&v) :
-        m_variant(std::move(v)) {}
-
-    friend bool operator==(column const &, column const &);
+    friend bool
+    operator==(column const &, column const &);
     friend int operator==(column const &, std::unique_ptr<column> const &);
     friend bool operator==(std::unique_ptr<column> const &, std::unique_ptr<column> const &);
     friend int operator==(std::unique_ptr<column> const &, column const &);
 };
+
+template <typename... Ts>
+inline column copy_variant::operator()(const boost::variant<Ts...> &v) const
+{
+    return boost::apply_visitor(*this, v);
+}
+
+template <typename... Ts>
+inline column copy_variant::operator()(const std::variant<Ts...> &v) const
+{
+    return std::visit(*this, v);
+}
+
+template <typename T>
+inline column copy_variant::operator()(const default_ctor<T> &v) const
+{
+    return operator()<T>(v);
+}
 
 } // namespace stan

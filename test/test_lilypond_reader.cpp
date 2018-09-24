@@ -43,7 +43,7 @@ mettle::suite<
 
             property(_, "writeread", [](Event n) {
                 std::string lily = write(n);
-                // std::cout << "lily: " << lily << std::endl;
+                std::cout << "lily: " << lily << std::endl;
                 expect(read(lily), equal_to(n));
             });
         });

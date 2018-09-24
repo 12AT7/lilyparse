@@ -17,9 +17,6 @@ namespace stan {
 // only.  This is still pretty safe, because X3 won't allow invalid values to
 // be parsed (that is it's purpose).
 
-template <typename T>
-auto default_value = T{};
-
 template <>
 const auto default_value<stan::pitch> = stan::pitch{ stan::pitchclass::c, stan::octave{ 4 } };
 
@@ -35,6 +32,23 @@ const auto default_value<stan::note> = stan::note{ default_value<stan::value>, d
 template <>
 const auto default_value<stan::chord> = stan::chord{ default_value<stan::value>, std::vector<stan::pitch>{ default_value<stan::pitch> } };
 
+template <>
+const auto default_value<beam> = beam{
+    note{ value::eighth(), default_value<pitch> },
+    note{ value::eighth(), default_value<pitch> }
+};
+
+template <>
+const auto default_value<stan::column> = stan::column{ default_value<stan::note> };
+
+} // namespace stan
+
+namespace stan::lilypond {
+
+} // namespace stan::lilypond
+
+namespace stan {
+
 } // namespace stan
 
 namespace boost::spirit::x3::traits {
@@ -48,44 +62,104 @@ namespace boost::spirit::x3::traits {
 // updated to replace boost::variant<> with std::variant<> under the covers,
 // this specialization may be removed.
 
-// template <typename... Ts>
-// struct transform_attribute<std::variant<Ts...>, boost::variant<Ts...>, x3::parser_id>
-// {
-//     using type = boost::variant<Ts...>;
-//     using exposed_type = std::variant<Ts...>;
-//
-//     static type pre(const exposed_type &ev) { return std::move(type()); }
-//
-//     static void post(exposed_type &ev, const type &bv)
-//     {
-//         ev = boost::apply_visitor([](auto &&n) -> exposed_type { return std::move(n); }, bv);
-//     }
-// };
+template <typename... Ts>
+struct transform_attribute<std::variant<Ts...>, boost::variant<Ts...>, x3::parser_id>
+{
+    using type = boost::variant<Ts...>;
+    using exposed_type = std::variant<Ts...>;
+
+    static type pre(const exposed_type &ev) { return std::move(type()); }
+
+    static void post(exposed_type &ev, const type &bv)
+    {
+        std::cout << "post std::variant to boost " << std::endl;
+        ev = boost::apply_visitor([](auto &&n) -> exposed_type { return std::move(n); }, bv);
+    }
+};
+
+template <typename... Ts>
+struct transform_attribute<stan::column, boost::variant<Ts...>, x3::parser_id>
+{
+    using type = boost::variant<Ts...>;
+    using exposed_type = stan::column;
+
+    static type pre(const exposed_type &ev) { return stan::default_value<stan::note>; }
+
+    static void post(exposed_type &ev, const type &bv)
+    {
+        std::cout << "post boost to column " << std::endl;
+        ev = stan::copy_variant()(bv);
+    }
+};
+
+template <typename... Ts>
+struct transform_attribute<boost::variant<Ts...>, stan::column, x3::parser_id>
+{
+    using exposed_type = boost::variant<Ts...>;
+    using type = stan::column;
+
+    static type pre(const exposed_type &ev) { return stan::default_value<stan::note>; }
+
+    static void post(exposed_type &ev, const type &bv)
+    {
+        std::cout << "post column to boost " << std::endl;
+        ev = stan::copy_variant()(bv);
+    }
+};
+
+template <typename T1, typename T2>
+struct transform_attribute<stan::default_ctor<T1>, stan::default_ctor<T2>, x3::parser_id>
+{
+    using type = stan::default_ctor<T2>;
+    using exposed_type = stan::default_ctor<T1>;
+
+    static type pre(const exposed_type &ev) { return stan::default_value<T2>; }
+
+    static void post(exposed_type &ev, const type &bv)
+    {
+        // ev = stan::default_value<T1>;
+        const T2 &t = bv;
+        std::cout << "post ctor to ctor " << typeid(T2).name() << std::endl;
+        stan::column t1 = stan::copy_variant()(t);
+        ev = t1;
+        // ev = T1{ stan::copy_variant()(bv) };
+    }
+};
+
+template <typename T>
+struct transform_attribute<T, stan::default_ctor<T>, x3::parser_id>
+{
+    using type = stan::default_ctor<T>;
+    using exposed_type = T;
+
+    static type pre(const exposed_type &ev) { return stan::default_value<T>; }
+
+    static void post(exposed_type &ev, const type &bv)
+    {
+        // ev = stan::default_value<T1>;
+        const T &t = bv;
+        std::cout << "post T to ctor " << typeid(T).name() << " " << stan::driver::debug::write(t) << std::endl;
+        // stan::column t1 = stan::copy_variant()(t);
+        ev = t;
+        // ev = T1{ stan::copy_variant()(bv) };
+    }
+};
 
 } // namespace boost::spirit::x3::traits
 
 // Metaprogram to compute a boost::variant<> from std::variant<>.
-// template <typename T>
-// struct std_variant_to_boost;
-//
-// template <typename... Ts>
-// struct std_variant_to_boost<std::variant<Ts...>>
-// {
-//     using type = boost::variant<Ts...>;
-// };
+template <typename T>
+struct std_variant_to_boost;
+
+template <typename... Ts>
+struct std_variant_to_boost<std::variant<Ts...>>
+{
+    using type = boost::variant<Ts...>;
+};
 
 namespace x3 = boost::spirit::x3;
 
 namespace stan::lilypond {
-
-template <typename T>
-struct default_ctor : T
-{
-    default_ctor() :
-        T{ stan::default_value<T> } {}
-    default_ctor(const T &v) :
-        T{ v } {}
-};
 
 struct pitchclass_ : x3::symbols<stan::pitchclass>
 {
@@ -160,8 +234,13 @@ x3::rule<struct pvalue, default_ctor<stan::value>> pvalue = "value";
 x3::rule<struct prest, default_ctor<stan::rest>> prest = "rest";
 x3::rule<struct pnote, default_ctor<stan::note>> pnote = "note";
 x3::rule<struct pchord, default_ctor<stan::chord>> pchord = "chord";
-using variant2 = boost::variant<stan::rest, stan::note, stan::chord>;
-x3::rule<struct pcolumn, variant2> column = "column";
+x3::rule<struct pbeam, default_ctor<stan::beam>> pbeam = "beam";
+x3::rule<struct ptuplet, default_ctor<stan::tuplet>> ptuplet = "tuplet";
+// using variant2 = boost::variant<default_ctor<stan::rest>, stan::note, stan::chord, stan::beam>;
+// x3::rule<struct pcolumn, variant2> column = "column";
+x3::rule<struct pcolumn, default_ctor<stan::column>> column = "column";
+
+// x3::rule<struct pmusic, std::shared_ptr<stan::column>> music = "music";
 // x3::rule<struct music_list, stan::sequential> music_list = "music_list";
 // x3::rule<struct key, stan::key> key = "key";
 // x3::rule<struct meter, stan::meter> meter = "meter";
@@ -203,7 +282,22 @@ struct construct<T>
     template <typename Context>
     void operator()(Context &ctx)
     {
+        std::cout << "start construct<T>" << std::endl; // stan::driver::debug::write(T{ x3::_attr(ctx) }) << std::endl;
         x3::_val(ctx) = T{ x3::_attr(ctx) };
+        std::cout << "stop construct<T>" << std::endl;
+    }
+};
+
+template <>
+struct construct<stan::column>
+{
+    template <typename Context>
+    void operator()(Context &ctx)
+    {
+        std::cout << "start construct<column>" << std::endl;
+        boost::variant<stan::rest, stan::note, stan::chord, stan::beam> v = x3::_attr(ctx);
+        x3::_val(ctx) = stan::copy_variant()(v);
+        std::cout << "stop construct<column>" << std::endl;
     }
 };
 
@@ -215,8 +309,11 @@ auto add_dot = [](auto &ctx) { _val(ctx) = dot(_val(ctx)); };
 
 auto const pvalue_def = basevalue[construct<stan::value>()] >> x3::repeat(0, 2)[lit('.')[add_dot]];
 auto const pchord_def = ('<' >> +ppitch >> '>' >> pvalue)[construct<stan::chord, 1, 0>()];
+auto const pbeam_def = '[' >> (+column)[construct<stan::beam>()] >> ']';
+auto const column_def = (prest | pnote | pchord | pbeam)[construct<stan::column>()];
 
-auto const column_def = prest | pnote | pchord;
+// auto make_shared = [](auto &ctx) { _val = std::make_shared<column>(std::move(_attr(ctx))); };
+// auto const music_def = column[make_shared];
 // auto const variant_def = note | chord_body | key | meter | clef ;
 // auto const music_list_def = lit('{') >> +variant >> '}';
 
@@ -228,7 +325,10 @@ BOOST_SPIRIT_DEFINE(pvalue)
 BOOST_SPIRIT_DEFINE(prest)
 BOOST_SPIRIT_DEFINE(pnote)
 BOOST_SPIRIT_DEFINE(pchord)
+BOOST_SPIRIT_DEFINE(pbeam)
+// BOOST_SPIRIT_DEFINE(ptuplet)
 BOOST_SPIRIT_DEFINE(column)
+// BOOST_SPIRIT_DEFINE(music)
 
 // auto construct_key = [](auto& ctx) {
 //     // _attr(ctx) = stan::key(stan::pitchclass::d, "minor");
@@ -252,6 +352,7 @@ BOOST_SPIRIT_DEFINE(column)
 
 // template <typename Event>
 stan::column
+// std::shared_ptr<stan::column>
 parse(const std::string &lily)
 {
 // Define a boolean predicate to detect if a parsing rule, such as
@@ -271,21 +372,27 @@ parse(const std::string &lily)
     auto parse = x3::with<value_tag>(std::ref(run)) [rule.value()];
 #endif
     // Now that the appropriate rule is discovered, use it to parse an Event
-    variant2 ev = stan::rest(stan::value::quarter());
+    // variant2 music = stan::default_value<stan::note>;
+    stan::column music{ stan::default_value<stan::note> };
     auto iter = lily.begin();
-    if (!x3::phrase_parse(iter, lily.end(), column, x3::space, ev)) {
+    std::cout << "start parse" << std::endl;
+    if (!x3::phrase_parse(iter, lily.end(), column, x3::space, music)) {
         throw std::runtime_error("parse error");
     }
     if (iter != lily.end()) {
         throw std::runtime_error("incomplete parse");
     }
 
+    std::cout << "done parse" << std::endl;
+    return stan::copy_variant()(music);
+    // return music;
     // std::cout << "parsed " << driver::debug::write(ev) << std::endl;
     // return stan::column(std::move(ev));
-    return stan::column(boost::apply_visitor([](auto &&n) -> stan::variant { return std::move(n); }, ev));
+    // return stan::column(boost::apply_visitor([](auto &&n) -> stan::variant { return std::move(n); }, ev));
     // return boost::apply_visitorstan::column(
 }
 
+#if 0
 // template <typename Event>
 stan::column parse(std::ifstream &is)
 {
@@ -295,6 +402,7 @@ stan::column parse(std::ifstream &is)
     };
     return parse(lily);
 }
+#endif
 
 #if 0
 // Coax explicit instantiations of specialized read<> templates for every rule
@@ -313,6 +421,7 @@ template<>
 stan::column parse<stan::column>(std::ifstream&);
 #endif
 
+// std::shared_ptr<stan::column>
 stan::column reader::operator()(const std::string &lily)
 {
     return parse(lily);

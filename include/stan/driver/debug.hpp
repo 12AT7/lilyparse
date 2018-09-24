@@ -6,13 +6,15 @@ namespace stan::driver::debug {
 
 struct writer
 {
-    std::string operator()(column const &) const;
     std::string operator()(duration const &) const;
+    std::string operator()(pitch const &) const;
     std::string operator()(value const &) const;
     std::string operator()(note const &) const;
     std::string operator()(rest const &) const;
     std::string operator()(chord const &) const;
-    std::string operator()(pitch const &) const;
+    std::string operator()(beam const &) const;
+    std::string operator()(tuplet const &) const;
+    std::string operator()(column const &) const;
     std::string operator()(std::unique_ptr<column> const &) const;
 
   private:

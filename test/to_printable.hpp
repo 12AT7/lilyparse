@@ -22,6 +22,16 @@ std::string to_printable(chord const &ev)
     return write(ev);
 }
 
+std::string to_printable(beam const &ev)
+{
+    return write(ev);
+}
+
+std::string to_printable(tuplet const &ev)
+{
+    return write(ev);
+}
+
 std::string to_printable(column const &ev)
 {
     return write(ev);
