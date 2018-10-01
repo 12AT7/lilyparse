@@ -37,4 +37,11 @@ std::string to_printable(column const &ev)
     return write(ev);
 }
 
+// Rapidcheck, of course, uses a similar but not the same custom printer as Mettle.
+template <typename T>
+void showValue(const T &value, std::ostream &os)
+{
+    os << to_printable(value);
+}
+
 } // namespace stan
