@@ -18,4 +18,11 @@ struct invalid_value : exception
         exception((std::string("invalid value: ") + format).c_str(), std::forward<Args>(args)...) {}
 };
 
+struct invalid_beam : exception
+{
+    template <typename... Args>
+    invalid_beam(const char *format, Args... args) :
+        exception((std::string("invalid beam: ") + format).c_str(), std::forward<Args>(args)...) {}
+};
+
 } // namespace stan

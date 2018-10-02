@@ -33,7 +33,9 @@ auto property(Builder &_, std::string name, Testable testable)
 mettle::suite<
     stan::rest,
     stan::note,
-    stan::chord>
+    stan::chord,
+    stan::beam,
+    stan::tuplet>
     column_suite(
         "lilypond reader", mettle::type_only, [](auto &_) {
             static stan::lilypond::reader read;
@@ -44,6 +46,6 @@ mettle::suite<
             property(_, "writeread", [](Event n) {
                 std::string lily = write(n);
                 std::cout << "lily: " << lily << std::endl;
-                expect(read(lily), equal_to(n));
+                expect(read(lily), equal_to<stan::column>(stan::column{ n }));
             });
         });

@@ -1,4 +1,5 @@
 #include <stan/driver/debug.hpp>
+#include <stan/duration.hpp>
 
 #include <fmt/format.h>
 #include <numeric>
@@ -17,6 +18,11 @@ std::string writer::operator()(pitch const &r) const
 std::string writer::operator()(value const &v) const
 {
     return std::to_string(v.den() / (1u << v.dots())) + std::string(v.dots(), '.');
+}
+
+std::string writer::operator()(duration const &v) const
+{
+    return fmt::format("{}/{}", v.num(), v.den());
 }
 
 std::string writer::operator()(rest const &r) const
@@ -67,7 +73,7 @@ std::string writer::operator()(tuplet const &r) const
         std::string(),
         [](std::string res, const auto &p) { return res + write(p) + " "; });
     elements.resize(elements.size() - 1);
-    return fmt::format("{{{}}}:{}]", elements, write(r.m_value));
+    return fmt::format("{}:{{{}}}]", write(r.m_value), elements);
 }
 
 std::string writer::operator()(std::unique_ptr<column> const &ptr) const

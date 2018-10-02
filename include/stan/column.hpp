@@ -2,11 +2,13 @@
 
 #include <stan/value.hpp>
 #include <stan/pitch.hpp>
+#include <stan/duration.hpp>
 
 #include <boost/hana/equal.hpp>
 
 #include <variant>
 #include <memory>
+#include <numeric>
 
 #include <boost/variant.hpp>
 
@@ -38,7 +40,7 @@ struct default_ctor : T
     default_ctor(const T &v) :
         T{ v }
     {
-        std::cout << "construct ctor " << typeid(T).name() << std::endl;
+        // std::cout << "construct ctor " << typeid(T).name() << std::endl;
     }
 };
 
@@ -85,6 +87,24 @@ struct chord
             throw invalid_value("chords must all unique pitches");
     }
 
+    template <typename Container>
+    chord(const value &v, Container &&n) :
+        m_value(v)
+    {
+        std::move(n.begin(), n.end(), std::back_inserter(m_pitches));
+        if (m_pitches.size() < 2)
+            throw invalid_value("chord must have at least two elements");
+    }
+
+    template <typename... Pitch>
+    chord(const value &v, Pitch &&... element) :
+        m_value(v)
+    {
+        (m_pitches.push_back(element), ...);
+        if (m_pitches.size() < 2)
+            throw invalid_value("chords must have at least two pitches");
+    }
+
     friend int operator==(chord const &, chord const &);
 };
 
@@ -115,25 +135,12 @@ struct tuplet
     }
 
     friend int operator==(tuplet const &, tuplet const &);
-};
 
-struct copy_variant
-{
-    template <typename T>
-    auto operator()(const T &v) const -> decltype(column{ v });
+    static value scale(int num, int den, duration const &inner);
+    static value scale(int num, int den, value const &inner);
 
-    column operator()(const std::unique_ptr<column> &v) const;
-
-    column operator()(const column &v) const;
-
-    template <typename... Ts>
-    column operator()(const boost::variant<Ts...> &v) const;
-
-    template <typename... Ts>
-    column operator()(const std::variant<Ts...> &v) const;
-
-    template <typename T>
-    column operator()(const default_ctor<T> &v) const;
+    template <typename ElementContainer>
+    static value scale(int num, int den, ElementContainer const &elements);
 };
 
 struct beam
@@ -144,23 +151,42 @@ struct beam
     beam(const ElementContainer &n)
     {
         std::move(n.begin(), n.end(), std::back_inserter(m_elements));
-
-        if (m_elements.size() < 2)
-            throw invalid_value("beams must have at least two elements");
+        validate();
     }
 
     template <typename... VoiceElement>
     beam(VoiceElement &&... element)
     {
         (m_elements.emplace_back(element), ...);
-        if (m_elements.size() < 2)
-            throw invalid_value("beams must have at least two elements");
+        validate();
     }
 
     friend int operator==(beam const &, beam const &);
+    void validate() const;
 };
 
 using variant = std::variant<rest, note, chord, beam, tuplet, std::unique_ptr<column>>;
+
+struct copy_variant
+{
+    template <typename T>
+    variant operator()(const T &v) const;
+
+    variant operator()(const std::unique_ptr<column> &v) const;
+
+    variant operator()(const tuplet &v) const;
+    variant operator()(const beam &v) const;
+    variant operator()(const column &v) const;
+
+    template <typename... Ts>
+    variant operator()(const boost::variant<Ts...> &v) const;
+
+    template <typename... Ts>
+    variant operator()(const std::variant<Ts...> &v) const;
+
+    template <typename T>
+    variant operator()(const default_ctor<T> &v) const;
+};
 
 struct column
 {
@@ -172,39 +198,54 @@ struct column
         m_variant(v) {}
     column(const chord &v) :
         m_variant(v) {}
-    column(const beam &v) :
-        m_variant(copy_variant()(v)) {}
+    // column(const beam &v) :
+    //     m_variant(copy_variant()(v)) {}
     column(const tuplet &v) :
         m_variant(copy_variant()(v)) {}
     column(std::unique_ptr<column> &&v) :
         m_variant(std::move(v)) {}
+    explicit column(variant &&v) :
+        m_variant{ std::move(v) } {}
 
     column(const column &c);
-    column operator=(const column &c);
+    void operator=(const column &c);
 
-    friend bool
-    operator==(column const &, column const &);
+    friend bool operator==(column const &, column const &);
     friend int operator==(column const &, std::unique_ptr<column> const &);
     friend bool operator==(std::unique_ptr<column> const &, std::unique_ptr<column> const &);
     friend int operator==(std::unique_ptr<column> const &, column const &);
 };
 
+duration operator+(const duration &d, const column &c);
+
 template <typename... Ts>
-inline column copy_variant::operator()(const boost::variant<Ts...> &v) const
+inline variant copy_variant::operator()(const boost::variant<Ts...> &v) const
 {
     return boost::apply_visitor(*this, v);
 }
 
 template <typename... Ts>
-inline column copy_variant::operator()(const std::variant<Ts...> &v) const
+inline variant copy_variant::operator()(const std::variant<Ts...> &v) const
 {
     return std::visit(*this, v);
 }
 
 template <typename T>
-inline column copy_variant::operator()(const default_ctor<T> &v) const
+inline variant copy_variant::operator()(const default_ctor<T> &v) const
 {
     return operator()<T>(v);
+}
+
+template <typename ElementContainer>
+value tuplet::scale(int num, int den, ElementContainer const &elements)
+{
+    duration inner = std::accumulate(
+        elements.begin(),
+        elements.end(),
+        duration::zero(),
+        [](duration res, const auto &p) { return res + p; });
+
+    return tuplet::scale(num, den, inner);
 }
 
 } // namespace stan

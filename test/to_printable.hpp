@@ -7,6 +7,16 @@ namespace stan {
 
 static stan::driver::debug::writer write;
 
+std::string to_printable(value const &ev)
+{
+    return write(ev);
+}
+
+std::string to_printable(pitch const &ev)
+{
+    return write(ev);
+}
+
 std::string to_printable(rest const &ev)
 {
     return write(ev);

@@ -57,6 +57,8 @@ struct pitch
         m_pitchclass{ p }, m_octave{ oct } {}
     staffline get_staffline() const;
 
+    pitch operator+(const pitch &);
+
     friend bool operator<(const pitch &, const pitch &);
     friend int operator==(const pitch &, const pitch &);
 };

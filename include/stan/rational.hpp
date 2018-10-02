@@ -45,6 +45,8 @@ struct rational
             throw invalid_value("zero denominator");
     }
 
+    friend struct tuplet;
+
   private:
     /*const*/ T m_num;
     /*const*/ T m_den;
@@ -54,6 +56,24 @@ template <typename T>
 bool operator<(rational<T> const &v1, rational<T> const &v2)
 {
     return v1.num() * v2.den() < v2.num() * v1.den();
+}
+
+template <typename T>
+bool operator>(rational<T> const &v1, rational<T> const &v2)
+{
+    return v1.num() * v2.den() > v2.num() * v1.den();
+}
+
+template <typename T>
+bool operator>=(rational<T> const &v1, rational<T> const &v2)
+{
+    return v1.num() * v2.den() >= v2.num() * v1.den();
+}
+
+template <typename T>
+bool operator<=(rational<T> const &v1, rational<T> const &v2)
+{
+    return v1.num() * v2.den() <= v2.num() * v1.den();
 }
 
 template <typename T>

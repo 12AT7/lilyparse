@@ -1,4 +1,5 @@
 #include <stan/driver/lilypond.hpp>
+#include <stan/duration.hpp>
 
 #include <numeric>
 
@@ -88,7 +89,19 @@ std::string writer::operator()<tuplet>(tuplet const &r) const
         std::string(),
         [](std::string res, const auto &p) { return res + write(p) + " "; });
     elements.resize(elements.size() - 1);
-    return fmt::format("{{{}}}{}]", elements, write(r.m_value));
+
+    duration inside = std::accumulate(
+        r.m_elements.begin(),
+        r.m_elements.end(),
+        duration::zero(),
+        [](duration res, const auto &p) { return res + p; });
+
+    duration outside = r.m_value;
+
+    int top = inside.num() / outside.den();
+    int bottom = inside.den() / outside.num();
+
+    return fmt::format(R"(\tuplet {}/{} {{{}}})", top, bottom, elements);
 }
 
 template <>

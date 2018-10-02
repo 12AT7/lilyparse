@@ -1,11 +1,13 @@
 #include <stan/driver/lilypond.hpp>
 #include <stan/driver/debug.hpp>
+#include <stan/duration.hpp>
 
 // #define BOOST_SPIRIT_X3_DEBUG
 #include <boost/spirit/home/x3.hpp>
 
 #include <fstream>
 #include <memory>
+#include <numeric>
 
 namespace stan {
 
@@ -30,7 +32,12 @@ template <>
 const auto default_value<stan::note> = stan::note{ default_value<stan::value>, default_value<stan::pitch> };
 
 template <>
-const auto default_value<stan::chord> = stan::chord{ default_value<stan::value>, std::vector<stan::pitch>{ default_value<stan::pitch> } };
+const auto default_value<stan::chord> = stan::chord{
+    default_value<stan::value>,
+    stan::pitch{ stan::pitchclass::c, stan::octave{ 4 } },
+    stan::pitch{ stan::pitchclass::e, stan::octave{ 4 } },
+    stan::pitch{ stan::pitchclass::g, stan::octave{ 4 } },
+};
 
 template <>
 const auto default_value<beam> = beam{
@@ -39,15 +46,16 @@ const auto default_value<beam> = beam{
 };
 
 template <>
+const auto default_value<tuplet> = tuplet{
+    value::quarter(),
+    note{ value::eighth(), default_value<pitch> },
+    note{ value::eighth(), default_value<pitch> },
+    note{ value::eighth(), default_value<pitch> },
+
+};
+
+template <>
 const auto default_value<stan::column> = stan::column{ default_value<stan::note> };
-
-} // namespace stan
-
-namespace stan::lilypond {
-
-} // namespace stan::lilypond
-
-namespace stan {
 
 } // namespace stan
 
@@ -88,7 +96,7 @@ struct transform_attribute<stan::column, boost::variant<Ts...>, x3::parser_id>
     static void post(exposed_type &ev, const type &bv)
     {
         std::cout << "post boost to column " << std::endl;
-        ev = stan::copy_variant()(bv);
+        ev = stan::column(stan::copy_variant()(bv));
     }
 };
 
@@ -122,7 +130,6 @@ struct transform_attribute<stan::default_ctor<T1>, stan::default_ctor<T2>, x3::p
         std::cout << "post ctor to ctor " << typeid(T2).name() << std::endl;
         stan::column t1 = stan::copy_variant()(t);
         ev = t1;
-        // ev = T1{ stan::copy_variant()(bv) };
     }
 };
 
@@ -139,9 +146,7 @@ struct transform_attribute<T, stan::default_ctor<T>, x3::parser_id>
         // ev = stan::default_value<T1>;
         const T &t = bv;
         std::cout << "post T to ctor " << typeid(T).name() << " " << stan::driver::debug::write(t) << std::endl;
-        // stan::column t1 = stan::copy_variant()(t);
         ev = t;
-        // ev = T1{ stan::copy_variant()(bv) };
     }
 };
 
@@ -295,10 +300,26 @@ struct construct<stan::column>
     void operator()(Context &ctx)
     {
         std::cout << "start construct<column>" << std::endl;
-        boost::variant<stan::rest, stan::note, stan::chord, stan::beam> v = x3::_attr(ctx);
-        x3::_val(ctx) = stan::copy_variant()(v);
+        boost::variant<stan::rest, stan::note, stan::chord, stan::beam, stan::tuplet> v = x3::_attr(ctx);
+        x3::_val(ctx) = stan::column(stan::copy_variant()(v));
         std::cout << "stop construct<column>" << std::endl;
     }
+};
+
+template <>
+struct construct<stan::beam>
+{
+    template <typename Context>
+    void operator()(Context &ctx)
+    {
+        x3::_val(ctx) = stan::beam(std::move(x3::_attr(ctx)));
+    }
+};
+
+auto to_tuplet = [](auto &ctx) {
+    auto attr = _attr(ctx);
+    stan::value val = tuplet::scale(at_c<0>(attr), at_c<1>(attr), at_c<2>(attr));
+    x3::_val(ctx) = tuplet{ val, at_c<2>(attr) };
 };
 
 auto const prest_def = x3::lit('r') >> pvalue[construct<stan::rest>()];
@@ -310,7 +331,8 @@ auto add_dot = [](auto &ctx) { _val(ctx) = dot(_val(ctx)); };
 auto const pvalue_def = basevalue[construct<stan::value>()] >> x3::repeat(0, 2)[lit('.')[add_dot]];
 auto const pchord_def = ('<' >> +ppitch >> '>' >> pvalue)[construct<stan::chord, 1, 0>()];
 auto const pbeam_def = '[' >> (+column)[construct<stan::beam>()] >> ']';
-auto const column_def = (prest | pnote | pchord | pbeam)[construct<stan::column>()];
+auto const ptuplet_def = (lit(R"(\tuplet)") >> x3::int_ >> '/' >> x3::int_ >> '{' >> (+column) >> '}')[to_tuplet];
+auto const column_def = (prest | pnote | pchord | pbeam | ptuplet)[construct<stan::column>()];
 
 // auto make_shared = [](auto &ctx) { _val = std::make_shared<column>(std::move(_attr(ctx))); };
 // auto const music_def = column[make_shared];
@@ -326,7 +348,7 @@ BOOST_SPIRIT_DEFINE(prest)
 BOOST_SPIRIT_DEFINE(pnote)
 BOOST_SPIRIT_DEFINE(pchord)
 BOOST_SPIRIT_DEFINE(pbeam)
-// BOOST_SPIRIT_DEFINE(ptuplet)
+BOOST_SPIRIT_DEFINE(ptuplet)
 BOOST_SPIRIT_DEFINE(column)
 // BOOST_SPIRIT_DEFINE(music)
 
@@ -384,7 +406,7 @@ parse(const std::string &lily)
     }
 
     std::cout << "done parse" << std::endl;
-    return stan::copy_variant()(music);
+    return stan::column(stan::copy_variant()(music));
     // return music;
     // std::cout << "parsed " << driver::debug::write(ev) << std::endl;
     // return stan::column(std::move(ev));
