@@ -89,7 +89,6 @@ column copy_variant::operator()(const tuplet &v) const
 
 column copy_variant::operator()(const column &v) const
 {
-    // std::cout << "column copy " << driver::debug::write(v) << " " << driver::debug::write(std::visit(*this, v.m_variant)) << std::endl;
     return std::visit(*this, v);
 }
 
@@ -172,11 +171,6 @@ void beam::validate() const
             }
             return std::string();
         }
-
-        // std::string operator()(std::unique_ptr<column> const &v) const
-        // {
-        //     return std::visit(*this, v->m_variant);
-        // };
     };
 
     std::for_each(
