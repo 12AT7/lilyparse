@@ -37,30 +37,6 @@ int operator==(const tuplet &c1, const tuplet &c2)
     return boost::hana::equal(c1, c2);
 }
 
-// bool operator==(const column &c1, const column &c2)
-// {
-//     return c1.m_variant == c2.m_variant;
-// }
-
-// bool operator==(std::unique_ptr<column> const &c1, std::unique_ptr<column> const &c2)
-// {
-//     return c1->m_variant == c2->m_variant;
-// }
-
-// column::column(const column &c) :
-//     m_variant(std::move(copy_variant()(c.m_variant)))
-// {
-//     // std::cout << "column::copy constructor " << stan::driver::debug::write(c);
-// }
-
-// void column::operator=(const column &c)
-// {
-//     std::cout << "column::operator= got " << stan::driver::debug::write(c);
-//     m_variant = copy_variant()(c.m_variant);
-//     std::cout << "column::operator= is now " << stan::driver::debug::write(*this) << std::endl;
-//     // return column(std::move(copy_variant()(c.m_variant).m_variant));
-// };
-
 struct get_duration
 {
     duration operator()(rest const &v) const { return v.m_value; }
@@ -75,10 +51,6 @@ struct get_duration
             [](duration res, const auto &p) { return res + p; });
     }
     duration operator()(tuplet const &v) const { return v.m_value; }
-    // duration operator()(std::unique_ptr<column> const &v) const
-    // {
-    //     return std::visit(*this, v->m_variant);
-    // }
 };
 
 duration operator+(stan::duration const &d, stan::column const &c)
@@ -86,19 +58,12 @@ duration operator+(stan::duration const &d, stan::column const &c)
     return d + std::visit(get_duration(), c);
 }
 
+#if 1
 template <typename T>
 column copy_variant::operator()(const T &v) const
 {
-    // std::cout << "direct copy " << typeid(T).name() << " " << driver::debug::write(v) << std::endl;
     return v;
 }
-
-// column copy_variant::operator()(const std::unique_ptr<column> &v) const
-// {
-//     // std::cout << "unique_ptr copy " << driver::debug::write(v) << std::endl;
-//     variant new_v = (*this)(v->m_variant);
-//     return std::make_unique<column>(std::move(new_v));
-// }
 
 column copy_variant::operator()(const beam &v) const
 {
@@ -131,6 +96,7 @@ column copy_variant::operator()(const column &v) const
 template column copy_variant::operator()<rest>(const rest &) const;
 template column copy_variant::operator()<note>(const note &) const;
 template column copy_variant::operator()<chord>(const chord &) const;
+#endif
 
 value tuplet::scale(int num, int den, const duration &inner)
 {

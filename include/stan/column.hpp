@@ -14,21 +14,6 @@
 
 namespace stan {
 
-// Because voice elements can nest, such as notes and chords being elements of
-// beams and tuplets in addition to valid voice elements by themselves, the
-// std::variant<> modeling voice elements must be able to contain other
-// instances of itself.  In the Boost days, this was done using a class
-// boost::recursive_variant<>.  With std::variant<>, we have to put nested
-// instances in a std::unique_ptr<column> as a basic requirement that in staff
-// music notation columns can nest, but in std::variant<> they cannot.  Not a
-// big deal, except that std::unique_ptr<column> is *move only*.
-//
-// This ultimately results in column being move-only, causing intense pain in
-// the construction and copying of these objects, with Spirit X3 (in
-// lilypond_reader.cpp) and the C++ programmer both sad and howling in agony.
-//
-// Well, at least the implementation should be fast...
-
 template <typename T>
 auto default_value = T{};
 
@@ -37,10 +22,10 @@ struct default_ctor : T
 {
     default_ctor() :
         T{ stan::default_value<T> } {}
+
     default_ctor(const T &v) :
         T{ v }
     {
-        // std::cout << "construct ctor " << typeid(T).name() << std::endl;
     }
 };
 
@@ -49,8 +34,7 @@ struct note;
 struct chord;
 struct beam;
 struct tuplet;
-struct column_ptr;
-using column = std::variant<rest, note, chord, beam, tuplet>; //, column_ptr>;
+using column = std::variant<rest, note, chord, beam, tuplet>;
 
 struct rest
 {
@@ -174,12 +158,13 @@ struct beam
     void validate() const;
 };
 
+duration operator+(const duration &d, const column &c);
+
+#if 1
 struct copy_variant
 {
     template <typename T>
     column operator()(const T &v) const;
-
-    // column operator()(const std::unique_ptr<column> &v) const;
 
     column operator()(const tuplet &v) const;
     column operator()(const beam &v) const;
@@ -194,38 +179,6 @@ struct copy_variant
     template <typename T>
     column operator()(const default_ctor<T> &v) const;
 };
-
-struct column_ptr
-{
-    column m_variant;
-
-#if 0
-    column(const rest &v) :
-        m_variant(v) {}
-    column(const note &v) :
-        m_variant(v) {}
-    column(const chord &v) :
-        m_variant(v) {}
-    // column(const beam &v) :
-    //     m_variant(copy_variant()(v)) {}
-    column(const tuplet &v) :
-        m_variant(copy_variant()(v)) {}
-    // column(std::unique_ptr<column> &&v) :
-    //     m_variant(std::move(v)) {}
-    explicit column(variant &&v) :
-        m_variant{ std::move(v) } {}
-
-    column(const column &c);
-    void operator=(const column &c);
-
-    friend bool operator==(column const &, column const &);
-    // friend int operator==(column const &, std::unique_ptr<column> const &);
-    // friend bool operator==(std::unique_ptr<column> const &, std::unique_ptr<column> const &);
-    // friend int operator==(std::unique_ptr<column> const &, column const &);
-#endif
-};
-
-duration operator+(const duration &d, const column &c);
 
 template <typename... Ts>
 inline column copy_variant::operator()(const boost::variant<Ts...> &v) const
@@ -244,6 +197,8 @@ inline column copy_variant::operator()(const default_ctor<T> &v) const
 {
     return operator()<T>(v);
 }
+
+#endif
 
 template <typename ElementContainer>
 value tuplet::scale(int num, int den, ElementContainer const &elements)
