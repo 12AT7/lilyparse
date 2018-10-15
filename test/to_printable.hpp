@@ -7,6 +7,12 @@ namespace stan {
 
 static stan::driver::debug::writer write;
 
+template <typename T>
+std::string to_printable(rational<T> const &ev)
+{
+    return write(ev);
+}
+
 std::string to_printable(value const &ev)
 {
     return write(ev);

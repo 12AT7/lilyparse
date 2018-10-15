@@ -23,17 +23,6 @@ struct duration : rational<std::uint32_t>
     friend struct tuplet;
 
     friend duration operator*(int, duration const &);
-
-  private:
-    integer compute_gcd(integer a, integer b) const
-    {
-        while (b != 0) {
-            integer tmp = b;
-            b = a % b;
-            a = tmp;
-        }
-        return a;
-    }
 };
 
 } // namespace stan

@@ -6,6 +6,7 @@ namespace stan::driver::debug {
 
 struct writer
 {
+    std::string operator()(rational<std::uint16_t> const &) const;
     std::string operator()(duration const &) const;
     std::string operator()(pitch const &) const;
     std::string operator()(value const &) const;

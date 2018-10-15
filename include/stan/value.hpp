@@ -29,11 +29,15 @@ struct value : rational<std::uint16_t>
 
     // The free function dot() needs the constructor.
     friend value dot(const value &v);
+    friend value dimin(const value &v);
+    friend value augment(const value &v);
     friend duration operator*(int, value const &);
 
     static const std::vector<value> all;
 };
 
 value dot(const value &v);
+value dimin(const value &v);
+value augment(const value &v);
 
 } // namespace stan

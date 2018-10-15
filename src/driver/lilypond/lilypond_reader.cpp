@@ -80,7 +80,7 @@ struct transform_attribute<std::variant<Ts...>, boost::variant<Ts...>, x3::parse
 
     static void post(exposed_type &ev, const type &bv)
     {
-        std::cout << "post std::variant to boost " << std::endl;
+        // std::cout << "post std::variant to boost " << std::endl;
         ev = boost::apply_visitor([](auto &&n) -> exposed_type { return std::move(n); }, bv);
     }
 };
@@ -95,7 +95,7 @@ struct transform_attribute<stan::column, boost::variant<Ts...>, x3::parser_id>
 
     static void post(exposed_type &ev, const type &bv)
     {
-        std::cout << "post boost to column " << std::endl;
+        // std::cout << "post boost to column " << std::endl;
         ev = stan::column(stan::copy_variant()(bv));
     }
 };
@@ -110,7 +110,7 @@ struct transform_attribute<boost::variant<Ts...>, stan::column, x3::parser_id>
 
     static void post(exposed_type &ev, const type &bv)
     {
-        std::cout << "post column to boost " << std::endl;
+        // std::cout << "post column to boost " << std::endl;
         ev = stan::copy_variant()(bv);
     }
 };
@@ -127,7 +127,7 @@ struct transform_attribute<stan::default_ctor<T1>, stan::default_ctor<T2>, x3::p
     {
         // ev = stan::default_value<T1>;
         const T2 &t = bv;
-        std::cout << "post ctor to ctor " << typeid(T2).name() << std::endl;
+        // std::cout << "post ctor to ctor " << typeid(T2).name() << std::endl;
         stan::column t1 = stan::copy_variant()(t);
         ev = t1;
     }
@@ -145,7 +145,7 @@ struct transform_attribute<T, stan::default_ctor<T>, x3::parser_id>
     {
         // ev = stan::default_value<T1>;
         const T &t = bv;
-        std::cout << "post T to ctor " << typeid(T).name() << " " << stan::driver::debug::write(t) << std::endl;
+        // std::cout << "post T to ctor " << typeid(T).name() << " " << stan::driver::debug::write(t) << std::endl;
         ev = t;
     }
 };
@@ -287,9 +287,9 @@ struct construct<T>
     template <typename Context>
     void operator()(Context &ctx)
     {
-        std::cout << "start construct<T>" << std::endl; // stan::driver::debug::write(T{ x3::_attr(ctx) }) << std::endl;
+        // std::cout << "start construct<T>" << std::endl; // stan::driver::debug::write(T{ x3::_attr(ctx) }) << std::endl;
         x3::_val(ctx) = T{ x3::_attr(ctx) };
-        std::cout << "stop construct<T>" << std::endl;
+        // std::cout << "stop construct<T>" << std::endl;
     }
 };
 
@@ -299,10 +299,10 @@ struct construct<stan::column>
     template <typename Context>
     void operator()(Context &ctx)
     {
-        std::cout << "start construct<column>" << std::endl;
+        // std::cout << "start construct<column>" << std::endl;
         boost::variant<stan::rest, stan::note, stan::chord, stan::beam, stan::tuplet> v = x3::_attr(ctx);
         x3::_val(ctx) = stan::column(stan::copy_variant()(v));
-        std::cout << "stop construct<column>" << std::endl;
+        // std::cout << "stop construct<column>" << std::endl;
     }
 };
 
@@ -312,7 +312,7 @@ struct construct<stan::beam>
     template <typename Context>
     void operator()(Context &ctx)
     {
-        x3::_val(ctx) = stan::beam(std::move(x3::_attr(ctx)));
+        x3::_val(ctx) = stan::beam(x3::_attr(ctx));
     }
 };
 
@@ -397,7 +397,7 @@ parse(const std::string &lily)
     // variant2 music = stan::default_value<stan::note>;
     stan::column music{ stan::default_value<stan::note> };
     auto iter = lily.begin();
-    std::cout << "start parse" << std::endl;
+    // std::cout << "start parse" << std::endl;
     if (!x3::phrase_parse(iter, lily.end(), column, x3::space, music)) {
         throw std::runtime_error("parse error");
     }
@@ -405,7 +405,7 @@ parse(const std::string &lily)
         throw std::runtime_error("incomplete parse");
     }
 
-    std::cout << "done parse" << std::endl;
+    // std::cout << "done parse" << std::endl;
     return stan::column(stan::copy_variant()(music));
     // return music;
     // std::cout << "parsed " << driver::debug::write(ev) << std::endl;

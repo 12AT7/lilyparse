@@ -10,7 +10,7 @@ using mettle::equal_to;
 using mettle::expect;
 using mettle::regex_match;
 
-mettle::suite<> beam_suite("tuplet", [](auto &_) {
+mettle::suite<> suite("beam", [](auto &_) {
     using stan::pitch;
     using stan::rest;
     using stan::chord;
@@ -19,6 +19,7 @@ mettle::suite<> beam_suite("tuplet", [](auto &_) {
     using stan::note;
     using stan::beam;
     using stan::tuplet;
+    using stan::column;
     using pc = stan::pitchclass;
 
     static const pitch c{ pc::c, octave{ 4 } };
@@ -29,10 +30,19 @@ mettle::suite<> beam_suite("tuplet", [](auto &_) {
     static const value eighth = value::eighth();
     static const note c8{ eighth, { c } };
 
-    _.test("construction", []() {
+    _.test("notes", []() {
         beam{ c8, c8 };
-        beam{ chord{ value::eighth(), c, e }, chord{ value::eighth(), c, e } };
-        beam{ tuplet{ value::quarter(), c8, c8, c8 } };
-        beam{ beam{ c8, c8 }, beam{ c8, c8 } };
     });
+
+    _.test("chords", []() {
+        beam{ chord{ value::eighth(), c, e }, chord{ value::eighth(), c, e } };
+    });
+
+    _.test("tuplet", []() {
+        beam{ tuplet{ value::quarter(), c8, c8, c8 } };
+    });
+
+    // _.test("beams", []() {
+    //     beam{ { beam{ c8, c8 }, beam{ c8, c8 } } };
+    // });
 });

@@ -8,6 +8,11 @@ namespace stan::driver::debug {
 
 writer write;
 
+std::string writer::operator()(rational<std::uint16_t> const &r) const
+{
+    return fmt::format("{}/{}", r.num(), r.den());
+}
+
 std::string writer::operator()(pitch const &r) const
 {
     return fmt::format("{}{}",
@@ -84,7 +89,7 @@ std::string writer::operator()(std::unique_ptr<column> const &ptr) const
 std::string writer::operator()(column const &col) const
 {
     static writer write;
-    return std::visit([](auto &&v) { return write(v); }, col.m_variant);
+    return std::visit([](auto &&v) { return write(v); }, col);
 }
 
 } // namespace stan::driver::debug

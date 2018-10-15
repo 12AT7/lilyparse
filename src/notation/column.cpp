@@ -37,29 +37,29 @@ int operator==(const tuplet &c1, const tuplet &c2)
     return boost::hana::equal(c1, c2);
 }
 
-bool operator==(const column &c1, const column &c2)
-{
-    return c1.m_variant == c2.m_variant;
-}
+// bool operator==(const column &c1, const column &c2)
+// {
+//     return c1.m_variant == c2.m_variant;
+// }
 
-bool operator==(std::unique_ptr<column> const &c1, std::unique_ptr<column> const &c2)
-{
-    return c1->m_variant == c2->m_variant;
-}
+// bool operator==(std::unique_ptr<column> const &c1, std::unique_ptr<column> const &c2)
+// {
+//     return c1->m_variant == c2->m_variant;
+// }
 
-column::column(const column &c) :
-    m_variant(std::move(copy_variant()(c.m_variant)))
-{
-    // std::cout << "column::copy constructor " << stan::driver::debug::write(c);
-}
+// column::column(const column &c) :
+//     m_variant(std::move(copy_variant()(c.m_variant)))
+// {
+//     // std::cout << "column::copy constructor " << stan::driver::debug::write(c);
+// }
 
-void column::operator=(const column &c)
-{
-    std::cout << "column::operator= got " << stan::driver::debug::write(c);
-    m_variant = copy_variant()(c.m_variant);
-    std::cout << "column::operator= is now " << stan::driver::debug::write(*this) << std::endl;
-    // return column(std::move(copy_variant()(c.m_variant).m_variant));
-};
+// void column::operator=(const column &c)
+// {
+//     std::cout << "column::operator= got " << stan::driver::debug::write(c);
+//     m_variant = copy_variant()(c.m_variant);
+//     std::cout << "column::operator= is now " << stan::driver::debug::write(*this) << std::endl;
+//     // return column(std::move(copy_variant()(c.m_variant).m_variant));
+// };
 
 struct get_duration
 {
@@ -75,62 +75,62 @@ struct get_duration
             [](duration res, const auto &p) { return res + p; });
     }
     duration operator()(tuplet const &v) const { return v.m_value; }
-    duration operator()(std::unique_ptr<column> const &v) const
-    {
-        return std::visit(*this, v->m_variant);
-    }
+    // duration operator()(std::unique_ptr<column> const &v) const
+    // {
+    //     return std::visit(*this, v->m_variant);
+    // }
 };
 
 duration operator+(stan::duration const &d, stan::column const &c)
 {
-    return d + std::visit(get_duration(), c.m_variant);
+    return d + std::visit(get_duration(), c);
 }
 
 template <typename T>
-variant copy_variant::operator()(const T &v) const
+column copy_variant::operator()(const T &v) const
 {
     // std::cout << "direct copy " << typeid(T).name() << " " << driver::debug::write(v) << std::endl;
     return v;
 }
 
-variant copy_variant::operator()(const std::unique_ptr<column> &v) const
-{
-    // std::cout << "unique_ptr copy " << driver::debug::write(v) << std::endl;
-    variant new_v = (*this)(v->m_variant);
-    return std::make_unique<column>(std::move(new_v));
-}
+// column copy_variant::operator()(const std::unique_ptr<column> &v) const
+// {
+//     // std::cout << "unique_ptr copy " << driver::debug::write(v) << std::endl;
+//     variant new_v = (*this)(v->m_variant);
+//     return std::make_unique<column>(std::move(new_v));
+// }
 
-variant copy_variant::operator()(const beam &v) const
+column copy_variant::operator()(const beam &v) const
 {
     std::vector<column> elements;
     std::transform(
         v.m_elements.begin(),
         v.m_elements.end(),
         std::back_inserter(elements),
-        [this](const column &c) { return column(std::visit(*this, c.m_variant)); });
+        [this](const column &c) { return column(std::visit(*this, c)); });
     return beam{ elements };
 }
 
-variant copy_variant::operator()(const tuplet &v) const
+column copy_variant::operator()(const tuplet &v) const
 {
     std::vector<column> elements;
     std::transform(
         v.m_elements.begin(),
         v.m_elements.end(),
         std::back_inserter(elements),
-        [this](const column &c) { return column(std::visit(*this, c.m_variant)); });
-    return tuplet{ v.m_value, std::move(elements) };
+        [this](const column &c) { return column(std::visit(*this, c)); });
+    return tuplet{ v.m_value, elements };
 }
 
-variant copy_variant::operator()(const column &v) const
+column copy_variant::operator()(const column &v) const
 {
     // std::cout << "column copy " << driver::debug::write(v) << " " << driver::debug::write(std::visit(*this, v.m_variant)) << std::endl;
-    return std::visit(*this, v.m_variant);
+    return std::visit(*this, v);
 }
 
-template variant copy_variant::operator()<rest>(const rest &) const;
-template variant copy_variant::operator()<note>(const note &) const;
-template variant copy_variant::operator()<chord>(const chord &) const;
+template column copy_variant::operator()<rest>(const rest &) const;
+template column copy_variant::operator()<note>(const note &) const;
+template column copy_variant::operator()<chord>(const chord &) const;
 
 value tuplet::scale(int num, int den, const duration &inner)
 {
@@ -141,14 +141,21 @@ value tuplet::scale(int num, int den, const duration &inner)
             return val;
         }
     }
-    throw invalid_value("tuplet duration ({}/{}:{{{}}} = {}/{}) must equal a valid value",
-                        num, den, stan::driver::debug::write(inner),
-                        outer.num(), outer.den());
+    throw invalid_tuplet("duration ({}/{}:{{{}}} = {}/{}) must equal a valid value",
+                         num, den, stan::driver::debug::write(inner),
+                         outer.num(), outer.den());
 }
 
 value tuplet::scale(int num, int den, const value &inner)
 {
     return tuplet::scale(num, den, static_cast<duration>(inner));
+}
+
+void tuplet::validate() const
+{
+    if (m_elements.size() < 2) {
+        throw invalid_value("tuplet must contain at least two elements");
+    }
 }
 
 void beam::validate() const
@@ -200,17 +207,17 @@ void beam::validate() const
             return std::string();
         }
 
-        std::string operator()(std::unique_ptr<column> const &v) const
-        {
-            return std::visit(*this, v->m_variant);
-        };
+        // std::string operator()(std::unique_ptr<column> const &v) const
+        // {
+        //     return std::visit(*this, v->m_variant);
+        // };
     };
 
     std::for_each(
         m_elements.begin(),
         m_elements.end(),
         [numelements = m_elements.size()](auto &c) {
-            std::string result = std::visit(is_valid{ numelements }, c.m_variant);
+            std::string result = std::visit(is_valid{ numelements }, c);
             if (!result.empty()) {
                 throw invalid_beam("{}", result);
             }

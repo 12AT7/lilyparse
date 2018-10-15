@@ -44,6 +44,14 @@ struct default_ctor : T
     }
 };
 
+struct rest;
+struct note;
+struct chord;
+struct beam;
+struct tuplet;
+struct column_ptr;
+using column = std::variant<rest, note, chord, beam, tuplet>; //, column_ptr>;
+
 struct rest
 {
     BOOST_HANA_DEFINE_STRUCT(rest, (value, m_value));
@@ -108,90 +116,90 @@ struct chord
     friend int operator==(chord const &, chord const &);
 };
 
-struct column;
-
 struct tuplet
 {
     BOOST_HANA_DEFINE_STRUCT(tuplet,
                              (value, m_value),
                              (std::vector<column>, m_elements));
 
-    template <typename Container>
-    tuplet(const value &v, Container &&n) :
+    template <typename Element>
+    tuplet(const value &v, const std::vector<Element> &n) :
         m_value(v)
     {
-        std::move(n.begin(), n.end(), std::back_inserter(m_elements));
-        if (m_elements.size() < 2)
-            throw invalid_value("tuplets must have at least two elements");
+        std::copy(n.begin(), n.end(), std::back_inserter(m_elements));
+        validate();
     }
 
     template <typename... VoiceElement>
-    tuplet(const value &v, VoiceElement &&... element) :
+    tuplet(const value &v, VoiceElement... element) :
         m_value(v)
     {
-        (m_elements.push_back(element), ...);
-        if (m_elements.size() < 2)
-            throw invalid_value("tuplets must have at least two elements");
+        (m_elements.emplace_back(element), ...);
+        validate();
     }
-
-    friend int operator==(tuplet const &, tuplet const &);
 
     static value scale(int num, int den, duration const &inner);
     static value scale(int num, int den, value const &inner);
 
     template <typename ElementContainer>
     static value scale(int num, int den, ElementContainer const &elements);
+
+    friend int operator==(tuplet const &, tuplet const &);
+
+  private:
+    void validate() const;
 };
 
 struct beam
 {
     BOOST_HANA_DEFINE_STRUCT(beam, (std::vector<column>, m_elements));
 
-    template <typename ElementContainer>
-    beam(const ElementContainer &n)
+    template <typename Element>
+    beam(const std::vector<Element> &n)
     {
-        std::move(n.begin(), n.end(), std::back_inserter(m_elements));
+        std::copy(n.begin(), n.end(), std::back_inserter(m_elements));
         validate();
     }
 
     template <typename... VoiceElement>
-    beam(VoiceElement &&... element)
+    beam(VoiceElement... element)
     {
         (m_elements.emplace_back(element), ...);
         validate();
     }
 
     friend int operator==(beam const &, beam const &);
+
+  private:
     void validate() const;
 };
-
-using variant = std::variant<rest, note, chord, beam, tuplet, std::unique_ptr<column>>;
 
 struct copy_variant
 {
     template <typename T>
-    variant operator()(const T &v) const;
+    column operator()(const T &v) const;
 
-    variant operator()(const std::unique_ptr<column> &v) const;
+    // column operator()(const std::unique_ptr<column> &v) const;
 
-    variant operator()(const tuplet &v) const;
-    variant operator()(const beam &v) const;
-    variant operator()(const column &v) const;
-
-    template <typename... Ts>
-    variant operator()(const boost::variant<Ts...> &v) const;
+    column operator()(const tuplet &v) const;
+    column operator()(const beam &v) const;
+    column operator()(const column &v) const;
 
     template <typename... Ts>
-    variant operator()(const std::variant<Ts...> &v) const;
+    column operator()(const boost::variant<Ts...> &v) const;
+
+    template <typename... Ts>
+    column operator()(const std::variant<Ts...> &v) const;
 
     template <typename T>
-    variant operator()(const default_ctor<T> &v) const;
+    column operator()(const default_ctor<T> &v) const;
 };
 
-struct column
+struct column_ptr
 {
-    variant m_variant;
+    column m_variant;
 
+#if 0
     column(const rest &v) :
         m_variant(v) {}
     column(const note &v) :
@@ -202,8 +210,8 @@ struct column
     //     m_variant(copy_variant()(v)) {}
     column(const tuplet &v) :
         m_variant(copy_variant()(v)) {}
-    column(std::unique_ptr<column> &&v) :
-        m_variant(std::move(v)) {}
+    // column(std::unique_ptr<column> &&v) :
+    //     m_variant(std::move(v)) {}
     explicit column(variant &&v) :
         m_variant{ std::move(v) } {}
 
@@ -211,27 +219,28 @@ struct column
     void operator=(const column &c);
 
     friend bool operator==(column const &, column const &);
-    friend int operator==(column const &, std::unique_ptr<column> const &);
-    friend bool operator==(std::unique_ptr<column> const &, std::unique_ptr<column> const &);
-    friend int operator==(std::unique_ptr<column> const &, column const &);
+    // friend int operator==(column const &, std::unique_ptr<column> const &);
+    // friend bool operator==(std::unique_ptr<column> const &, std::unique_ptr<column> const &);
+    // friend int operator==(std::unique_ptr<column> const &, column const &);
+#endif
 };
 
 duration operator+(const duration &d, const column &c);
 
 template <typename... Ts>
-inline variant copy_variant::operator()(const boost::variant<Ts...> &v) const
+inline column copy_variant::operator()(const boost::variant<Ts...> &v) const
 {
     return boost::apply_visitor(*this, v);
 }
 
 template <typename... Ts>
-inline variant copy_variant::operator()(const std::variant<Ts...> &v) const
+inline column copy_variant::operator()(const std::variant<Ts...> &v) const
 {
     return std::visit(*this, v);
 }
 
 template <typename T>
-inline variant copy_variant::operator()(const default_ctor<T> &v) const
+inline column copy_variant::operator()(const default_ctor<T> &v) const
 {
     return operator()<T>(v);
 }

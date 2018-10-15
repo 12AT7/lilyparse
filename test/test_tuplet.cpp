@@ -2,6 +2,7 @@
 #include <stan/duration.hpp>
 #include <stan/driver/lilypond.hpp>
 #include "to_printable.hpp"
+#include "property.hpp"
 
 #include <mettle.hpp>
 #include <stan/rapidcheck/mettle.hpp>
@@ -28,6 +29,8 @@ mettle::suite<> tuplet_suite("tuplet", [](auto &_) {
     static const value eighth = value::eighth();
     static const note c8{ eighth, { c } };
 
+    static stan::driver::debug::writer debug;
+
     // clang-format off
         _.test("construction", []() {
                 tuplet{quarter, c8, c8, c8 };
@@ -51,6 +54,13 @@ mettle::suite<> tuplet_suite("tuplet", [](auto &_) {
                     };
         // clang-format on
     });
+
+    using rational = stan::rational<std::uint16_t>;
+    property(_, "compute rational", [](rational r) {
+        float real = r; // Invoke rational::operator float()
+        expect(rational::quantize(real), equal_to(r));
+    });
+
     _.test("scaling", []() {
         expect(tuplet::scale(1, 1, value::quarter()), equal_to(value::quarter()));
 
@@ -82,5 +92,9 @@ mettle::suite<> tuplet_suite("tuplet", [](auto &_) {
         expect(tuplet::scale(7, 4, 7 * value::sixteenth()), equal_to(value::quarter()));
         expect(tuplet::scale(7, 4, 7 * value::eighth()), equal_to(value::half()));
         expect(tuplet::scale(7, 4, 7 * value::quarter()), equal_to(value::whole()));
+    });
+
+    property(_, "generate", [](tuplet v) {
+        std::cout << "tuplet: " << debug(v) << std::endl;
     });
 });

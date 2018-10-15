@@ -1,9 +1,12 @@
 #include <stan/driver/lilypond.hpp>
+#include <stan/driver/debug.hpp>
 #include <stan/duration.hpp>
 
 #include <numeric>
 
 namespace stan::lilypond {
+
+driver::debug::writer debug;
 
 template <>
 std::string writer::operator()<value>(const value &v) const
@@ -98,24 +101,17 @@ std::string writer::operator()<tuplet>(tuplet const &r) const
 
     duration outside = r.m_value;
 
-    int top = inside.num() / outside.den();
-    int bottom = inside.den() / outside.num();
-
-    return fmt::format(R"(\tuplet {}/{} {{{}}})", top, bottom, elements);
-}
-
-template <>
-std::string writer::operator()<std::unique_ptr<column>>(const std::unique_ptr<column> &v) const
-{
-    static writer write;
-    return std::visit([](auto &&ev) { return write(ev); }, v->m_variant);
+    float fi = inside;
+    float fo = outside;
+    auto scale = rational<std::uint16_t>::quantize(fi / fo);
+    return fmt::format(R"(\tuplet {}/{} {{{}}})", scale.num(), scale.den(), elements);
 }
 
 template <>
 std::string writer::operator()<column>(const column &v) const
 {
     static writer write;
-    return std::visit([](auto &&ev) { return write(ev); }, v.m_variant);
+    return std::visit([](auto &&ev) { return write(ev); }, v);
 }
 
 } // namespace stan::lilypond

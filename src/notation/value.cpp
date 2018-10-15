@@ -18,6 +18,16 @@ value dot(const value &v)
     };
 }
 
+value dimin(const value &v)
+{
+    return { v.num(), static_cast<value::integer>(v.den() * 2) };
+}
+
+value augment(const value &v)
+{
+    return { v.num(), static_cast<value::integer>(v.den() / 2) };
+}
+
 const std::vector<value> value::all{
     whole(),
     half(),
@@ -90,7 +100,7 @@ value::dots_t value::dots() const
           { dot(dot(half())), 2 },
           { dot(dot(whole())), 2 },
           { instantaneous(), 0 } }
-        };
+    };
 
     return dots_table.at(*this);
 }
