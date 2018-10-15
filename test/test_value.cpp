@@ -1,9 +1,10 @@
 #include <mettle.hpp>
-#include <stan/rapidcheck/mettle.hpp>
 #include "to_printable.hpp"
+#include "property.hpp"
 
 #include <stan/value.hpp>
 #include <stan/duration.hpp>
+#include <stan/driver/debug.hpp>
 
 #include <numeric>
 
@@ -24,6 +25,8 @@ using mettle::expect;
 using mettle::not_equal_to;
 using mettle::thrown;
 
+stan::driver::debug::writer debug;
+
 mettle::suite<> suite("value", [](auto &_) {
     using stan::test::duration;
 
@@ -42,6 +45,16 @@ mettle::suite<> suite("value", [](auto &_) {
     _.test("too many dots", []() {
         expect([]() { dot(dot(dot(stan::value::whole()))); },
                thrown<stan::invalid_value>());
+    });
+
+    property(_, "augmentation", [](stan::value v) {
+        if (v < stan::value::whole())
+            expect(duration(augment(v)), equal_to(2 * duration(v)));
+    });
+
+    property(_, "diminution", [](stan::value v) {
+        if (v > stan::value::sixteenth())
+            expect(duration(dimin(v)), equal_to(duration(v) / 2));
     });
 
     _.test("duration construction", []() {

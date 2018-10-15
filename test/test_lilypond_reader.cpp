@@ -8,6 +8,7 @@
 
 using mettle::equal_to;
 using mettle::expect;
+using mettle::thrown;
 
 mettle::suite<
     stan::rest,
@@ -15,7 +16,7 @@ mettle::suite<
     stan::chord,
     stan::beam,
     stan::tuplet>
-    column_suite(
+    suite(
         "lilypond reader", mettle::type_only, [](auto &_) {
             static stan::lilypond::reader read;
             static stan::lilypond::writer write;
@@ -26,5 +27,11 @@ mettle::suite<
             property(_, "writeread", [](Event n) {
                 std::string lily = write(n);
                 expect(read(lily), equal_to<stan::column>(stan::column{ n }));
+            });
+
+            property(_, "parse error", [](Event n) {
+                std::string lily = write(n) + " crash";
+                expect([lily] { read(lily); },
+                       thrown<std::runtime_error>("incomplete parse"));
             });
         });

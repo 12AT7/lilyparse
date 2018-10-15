@@ -5,7 +5,6 @@
 #include "property.hpp"
 
 #include <mettle.hpp>
-#include <stan/rapidcheck/mettle.hpp>
 
 using mettle::equal_to;
 using mettle::expect;

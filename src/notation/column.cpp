@@ -42,6 +42,7 @@ struct get_duration
     duration operator()(rest const &v) const { return v.m_value; }
     duration operator()(note const &v) const { return v.m_value; }
     duration operator()(chord const &v) const { return v.m_value; }
+    duration operator()(tuplet const &v) const { return v.m_value; }
     duration operator()(beam const &v) const
     {
         return std::accumulate(
@@ -50,7 +51,6 @@ struct get_duration
             duration::zero(),
             [](duration res, const auto &p) { return res + p; });
     }
-    duration operator()(tuplet const &v) const { return v.m_value; }
 };
 
 duration operator+(stan::duration const &d, stan::column const &c)
@@ -137,10 +137,10 @@ void beam::validate() const
         std::string operator()(note const &v) const
         {
             if (v.m_value > value::quarter()) {
-                return "cannot hold whole or half notes";
+                return "cannot contain whole or half notes";
             }
             if (m_numelements < 2) {
-                return "must contain at least two values";
+                return "must contain at least two elements";
             }
             return std::string();
         }
@@ -148,10 +148,10 @@ void beam::validate() const
         std::string operator()(chord const &v) const
         {
             if (v.m_value > value::quarter()) {
-                return "cannot hold whole or half notes";
+                return "cannot contain whole or half notes";
             }
             if (m_numelements < 2) {
-                return "must contain at least two values";
+                return "must contain at least two elements";
             }
             return std::string();
         }
@@ -159,7 +159,7 @@ void beam::validate() const
         std::string operator()(beam const &v) const
         {
             if (m_numelements < 2) {
-                return "nested beams must contain at least two values";
+                return "nested beams must contain at least two elements";
             }
             return std::string();
         }
@@ -167,7 +167,7 @@ void beam::validate() const
         std::string operator()(tuplet const &v) const
         {
             if (v.m_value > value::quarter()) {
-                return "cannot hold whole or half note tuplets";
+                return "cannot contain whole or half note tuplets";
             }
             return std::string();
         }

@@ -1,9 +1,12 @@
 #include <stan/value.hpp>
 #include <stan/duration.hpp>
+#include <stan/driver/debug.hpp>
 
 #include <map>
 
 namespace stan {
+
+static driver::debug::writer debug;
 
 value dot(const value &v)
 {
@@ -55,8 +58,10 @@ value::operator duration() const
         {
             { value::instantaneous(), { 0, 1 } },
             { value::sixtyfourth(), { 1, 64 } },
+            { dot(value::sixtyfourth()), { 3, 128 } },
             { value::thirtysecond(), { 1, 32 } },
             { dot(value::thirtysecond()), { 3, 64 } },
+            { dot(dot(value::thirtysecond())), { 7, 128 } },
             { value::sixteenth(), { 1, 16 } },
             { dot(value::sixteenth()), { 3, 32 } },
             { dot(dot(value::sixteenth())), { 7, 64 } },
@@ -75,7 +80,11 @@ value::operator duration() const
         }
     };
 
-    return duration_table.at(*this);
+    auto it = duration_table.find(*this);
+    if (it == duration_table.end()) {
+        throw invalid_value("unknown duration of {}", debug(*this));
+    }
+    return it->second;
 }
 
 value::dots_t value::dots() const

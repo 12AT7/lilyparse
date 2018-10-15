@@ -107,15 +107,6 @@ struct Arbitrary<chord>
 };
 
 template <>
-struct Arbitrary<column>
-{
-    static Gen<column> arbitrary()
-    {
-        return gen::construct<column>(gen::arbitrary<note>());
-    };
-};
-
-template <>
 struct Arbitrary<tuplet>
 {
     static Gen<tuplet> arbitrary()
@@ -168,6 +159,20 @@ struct Arbitrary<beam>
                         gen::cast<column>(gen::suchThat<chord>(has_flag)))))
                 // gen::container<std::vector<column>>(1, gen::suchThat<tuplet>(has_beam))
                 ));
+    };
+};
+
+template <>
+struct Arbitrary<column>
+{
+    static Gen<column> arbitrary()
+    {
+        return gen::oneOf(
+            gen::construct<column>(gen::arbitrary<rest>()),
+            gen::construct<column>(gen::arbitrary<note>()),
+            gen::construct<column>(gen::arbitrary<chord>()),
+            gen::construct<column>(gen::arbitrary<beam>()),
+            gen::construct<column>(gen::arbitrary<tuplet>()));
     };
 };
 
