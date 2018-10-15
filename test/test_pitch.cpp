@@ -2,14 +2,13 @@
 
 #include <stan/pitch.hpp>
 #include <stan/driver/debug.hpp>
-
-#include <stan/rapidcheck/mettle.hpp>
+#include "property.hpp"
 
 using mettle::equal_to;
 using mettle::expect;
 using mettle::member;
 
-mettle::property_suite<> pitchclass_suite("pitchclass", [](auto &_) {
+mettle::suite<> pitchclass_suite("pitchclass", [](auto &_) {
     using pc = stan::pitchclass;
 
     static const std::vector<stan::pitchclass> all_pitchclasses{
@@ -22,7 +21,7 @@ mettle::property_suite<> pitchclass_suite("pitchclass", [](auto &_) {
         pc::bff, pc::bf, pc::b, pc::bs, pc::bss
     };
 
-    _.property("pitchclasses are valid", [](stan::pitchclass pc) {
+    property(_, "pitchclasses are valid", [](stan::pitchclass pc) {
         static const stan::valid_pitchclass valid;
         expect(valid, member(pc));
     });
@@ -41,7 +40,7 @@ mettle::property_suite<> pitchclass_suite("pitchclass", [](auto &_) {
     // });
 });
 
-mettle::property_suite<> pitch_suite("pitch", [](auto &_) {
+mettle::suite<> pitch_suite("pitch", [](auto &_) {
     using mettle::less;
     using mettle::is_not;
     using mettle::greater_equal;
@@ -50,11 +49,11 @@ mettle::property_suite<> pitch_suite("pitch", [](auto &_) {
     using stan::octave;
     using pc = stan::pitchclass;
 
-    _.property("octaves are valid numbers", [](stan::octave oct) {
+    property(_, "octaves are valid numbers", [](stan::octave oct) {
         expect(static_cast<std::uint8_t>(oct), all(greater_equal(0), less(8)));
     });
 
-    _.property("pitches", [](stan::pitch p) {
+    property(_, "pitches", [](stan::pitch p) {
         expect(static_cast<std::uint8_t>(p.get_staffline()), all(greater_equal(0)));
     });
 

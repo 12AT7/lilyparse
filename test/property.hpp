@@ -1,4 +1,4 @@
-#include <stan/rapidcheck/mettle.hpp>
+#include <stan/rapidcheck/generator.hpp>
 
 template <typename Builder, typename Testable>
 auto property(Builder &_, std::string name, Testable testable)

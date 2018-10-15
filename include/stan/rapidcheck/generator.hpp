@@ -156,9 +156,7 @@ struct Arbitrary<beam>
                 gen::atLeastTwo(gen::container<std::vector<column>>(
                     gen::oneOf(
                         gen::cast<column>(gen::suchThat<note>(has_flag)),
-                        gen::cast<column>(gen::suchThat<chord>(has_flag)))))
-                // gen::container<std::vector<column>>(1, gen::suchThat<tuplet>(has_beam))
-                ));
+                        gen::cast<column>(gen::suchThat<chord>(has_flag)))))));
     };
 };
 

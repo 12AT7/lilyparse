@@ -2,7 +2,7 @@
 #include <stan/driver/lilypond.hpp>
 
 #include <mettle.hpp>
-#include <stan/rapidcheck/mettle.hpp>
+#include "property.hpp"
 
 using mettle::equal_to;
 using mettle::expect;
@@ -13,7 +13,7 @@ using mettle::regex_match;
 // https://github.com/jimporter/mettle/issues/24.  So for now, we just
 // instantiate the writer in each test.
 
-mettle::property_suite<> lilypond_suite("lilypond writer", [](auto &_) {
+mettle::suite<> lilypond_suite("lilypond writer", [](auto &_) {
     static stan::lilypond::writer write;
     _.test("octave", []() {
         using stan::octave;
@@ -93,11 +93,11 @@ mettle::property_suite<> lilypond_suite("lilypond writer", [](auto &_) {
         expect(write(value::instantaneous()), equal_to(""));
     });
 
-    _.property("pitch", [](stan::pitch p) {
+    property(_, "pitch", [](stan::pitch p) {
         expect(write(p), regex_match(write(p.m_pitchclass) + "[,']{0,4}"));
     });
 
-    _.property("note", [](stan::note n) {
+    property(_, "note", [](stan::note n) {
         // Values and pitches are arleady tested exhaustively, so here we check
         // that any possible note writes as a combination of those.
         // Correctness will be further checked in test_lilypond_reader, where
