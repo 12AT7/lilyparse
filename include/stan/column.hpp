@@ -64,37 +64,35 @@ struct chord
                              (value, m_value),
                              (std::vector<pitch>, m_pitches));
 
-    template <typename PitchContainer>
-    chord(const value &v, const PitchContainer &p) :
-        m_value(v)
-    {
-        if (p.empty())
-            throw invalid_value("chords must have at least one pitch");
-
-        std::copy(p.begin(), p.end(), std::back_inserter(m_pitches));
-        std::sort(m_pitches.begin(), m_pitches.end());
-        m_pitches.erase(std::unique(m_pitches.begin(), m_pitches.end()), m_pitches.end());
-
-        if (m_pitches.size() != p.size())
-            throw invalid_value("chords must all unique pitches");
-    }
-
+    // template <typename Pitch, template <typename> class Container>
     template <typename Container>
     chord(const value &v, Container &&n) :
         m_value(v)
     {
+        if (n.size() < 2)
+            throw invalid_chord("at least two pitches required");
+
         std::move(n.begin(), n.end(), std::back_inserter(m_pitches));
-        if (m_pitches.size() < 2)
-            throw invalid_value("chord must have at least two elements");
+        std::sort(m_pitches.begin(), m_pitches.end());
+        m_pitches.erase(std::unique(m_pitches.begin(), m_pitches.end()), m_pitches.end());
+
+        if (m_pitches.size() != n.size())
+            throw invalid_chord("unique pitches required");
     }
 
     template <typename... Pitch>
-    chord(const value &v, Pitch &&... element) :
+    chord(const value &v, pitch p1, Pitch &&... element) :
         m_value(v)
     {
+        m_pitches.push_back(p1);
         (m_pitches.push_back(element), ...);
+
         if (m_pitches.size() < 2)
-            throw invalid_value("chords must have at least two pitches");
+            throw invalid_chord("at least two pitches required");
+
+        std::sort(m_pitches.begin(), m_pitches.end());
+        if (std::unique(m_pitches.begin(), m_pitches.end()) != m_pitches.end())
+            throw invalid_chord("unique pitches required");
     }
 
     friend int operator==(chord const &, chord const &);

@@ -9,15 +9,10 @@
 using mettle::equal_to;
 using mettle::expect;
 using mettle::regex_match;
+using mettle::thrown;
 
 mettle::suite<> tuplet_suite("tuplet", [](auto &_) {
-    using stan::tuplet;
-    using stan::pitch;
-    using stan::rest;
-    using stan::chord;
-    using stan::octave;
-    using stan::value;
-    using stan::note;
+    using namespace stan;
     using pc = stan::pitchclass;
 
     static const pitch c{ pc::c, octave{ 4 } };
@@ -52,6 +47,12 @@ mettle::suite<> tuplet_suite("tuplet", [](auto &_) {
                         tuplet{eighth, c8, c8, c8 }
                     };
         // clang-format on
+    });
+
+    _.test("invalid", []() {
+        expect([] { tuplet{ quarter, c8 }; },
+               thrown<stan::invalid_tuplet>(
+                   "invalid tuplet: must contain at least two elements"));
     });
 
     using rational = stan::rational<std::uint16_t>;

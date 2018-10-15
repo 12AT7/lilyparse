@@ -119,7 +119,7 @@ value tuplet::scale(int num, int den, const value &inner)
 void tuplet::validate() const
 {
     if (m_elements.size() < 2) {
-        throw invalid_value("tuplet must contain at least two elements");
+        throw invalid_tuplet("must contain at least two elements");
     }
 }
 
