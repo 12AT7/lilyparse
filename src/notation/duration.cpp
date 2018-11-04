@@ -10,6 +10,9 @@ duration operator+(duration const &d1, duration const &d2)
     integer d1_den = d1.den();
     integer d2_den = d2.den();
     integer gcd = duration::compute_gcd(d1_den, d2_den);
+
+    // Silence Division by Zero check
+    assert(d1_den > 0);
     assert(d2_den > 0); // Silence Division by Zero check
     assert(gcd > 0);    // Silence Division by Zero check
 
