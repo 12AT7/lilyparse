@@ -4,8 +4,6 @@
 #include <stan/pitch.hpp>
 #include <stan/duration.hpp>
 
-#include <boost/hana/equal.hpp>
-
 #include <variant>
 #include <memory>
 #include <numeric>
@@ -42,8 +40,6 @@ struct rest
 
     rest(const value &v) :
         m_value(v) {}
-
-    friend int operator==(rest const &, rest const &);
 };
 
 struct note
@@ -54,8 +50,6 @@ struct note
 
     note(const value &v, const pitch &p) :
         m_value(v), m_pitch(p) {}
-
-    friend int operator==(note const &, note const &);
 };
 
 struct chord
@@ -94,8 +88,6 @@ struct chord
         if (std::unique(m_pitches.begin(), m_pitches.end()) != m_pitches.end())
             throw invalid_chord("unique pitches required");
     }
-
-    friend int operator==(chord const &, chord const &);
 };
 
 struct tuplet
@@ -126,8 +118,6 @@ struct tuplet
     template <typename ElementContainer>
     static value scale(int num, int den, ElementContainer const &elements);
 
-    friend int operator==(tuplet const &, tuplet const &);
-
   private:
     void validate() const;
 };
@@ -149,8 +139,6 @@ struct beam
         (m_elements.emplace_back(element), ...);
         validate();
     }
-
-    friend int operator==(beam const &, beam const &);
 
   private:
     void validate() const;
@@ -211,3 +199,5 @@ value tuplet::scale(int num, int den, ElementContainer const &elements)
 }
 
 } // namespace stan
+
+#include <stan/equal.hpp>

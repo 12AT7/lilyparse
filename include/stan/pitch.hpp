@@ -7,6 +7,10 @@
 
 namespace stan {
 
+// template <typename S>
+// typename std::enable_if<boost::hana::Struct<S>::value, bool>::type
+// operator==(const S& c1, const S& c2);
+
 namespace ts = type_safe;
 
 // Pitch models "American Standard Pitch Notation" -
@@ -60,7 +64,7 @@ struct pitch
     pitch operator+(const pitch &);
 
     friend bool operator<(const pitch &, const pitch &);
-    friend int operator==(const pitch &, const pitch &);
+    // friend bool operator==(const pitch &, const pitch &);
 };
 
 // Enumerating all of valid pitchclasses is useful, especially in testing, but

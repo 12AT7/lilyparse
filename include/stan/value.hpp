@@ -33,6 +33,7 @@ struct value : rational<std::uint16_t>
     friend value augment(const value &v);
     friend duration operator*(int, value const &);
 
+    // friend bool operator==(const value &, const value &);
     static const std::vector<value> all;
 };
 
