@@ -134,6 +134,7 @@ T rational<T>::compute_gcd(T a, T b)
     while (b != 0) {
         a = std::exchange(b, a % b);
     }
+    assert(a > 0); // Silence clang DivideZero warning
     return a;
 }
 

@@ -15,18 +15,6 @@ namespace stan {
 template <typename T>
 auto default_value = T{};
 
-template <typename T>
-struct default_ctor : T
-{
-    default_ctor() :
-        T{ stan::default_value<T> } {}
-
-    default_ctor(const T &v) :
-        T{ v }
-    {
-    }
-};
-
 struct rest;
 struct note;
 struct chord;
@@ -161,9 +149,6 @@ struct copy_variant
 
     template <typename... Ts>
     column operator()(const std::variant<Ts...> &v) const;
-
-    template <typename T>
-    column operator()(const default_ctor<T> &v) const;
 };
 
 template <typename... Ts>
@@ -176,12 +161,6 @@ template <typename... Ts>
 inline column copy_variant::operator()(const std::variant<Ts...> &v) const
 {
     return std::visit(*this, v);
-}
-
-template <typename T>
-inline column copy_variant::operator()(const default_ctor<T> &v) const
-{
-    return operator()<T>(v);
 }
 
 #endif

@@ -20,16 +20,26 @@ namespace stan {
 // be parsed (that is it's purpose).
 
 template <>
-const auto default_value<stan::pitch> = stan::pitch{ stan::pitchclass::c, stan::octave{ 4 } };
+const auto default_value<stan::pitch> = stan::pitch{
+    stan::pitchclass::c,
+    stan::octave{ 4 }
+};
 
 template <>
-const auto default_value<stan::value> = stan::value::quarter();
+const auto default_value<stan::value> = stan::value{
+    stan::value::quarter()
+};
 
 template <>
-const auto default_value<stan::rest> = stan::rest{ default_value<stan::value> };
+const auto default_value<stan::rest> = stan::rest{
+    default_value<stan::value>
+};
 
 template <>
-const auto default_value<stan::note> = stan::note{ default_value<stan::value>, default_value<stan::pitch> };
+const auto default_value<stan::note> = stan::note{
+    default_value<stan::value>,
+    default_value<stan::pitch>
+};
 
 template <>
 const auto default_value<stan::chord> = stan::chord{
@@ -55,7 +65,21 @@ const auto default_value<tuplet> = tuplet{
 };
 
 template <>
-const auto default_value<stan::column> = stan::column{ default_value<stan::note> };
+const auto default_value<stan::column> = stan::column{
+    default_value<stan::note>
+};
+
+template <typename T>
+struct default_ctor : T
+{
+    default_ctor() :
+        T{ stan::default_value<T> } {}
+
+    default_ctor(const T &v) :
+        T{ v }
+    {
+    }
+};
 
 } // namespace stan
 
@@ -69,34 +93,6 @@ namespace boost::spirit::x3::traits {
 // needed, but it did take a day's labor to figure this out.  If X3 ever gets
 // updated to replace boost::variant<> with std::variant<> under the covers,
 // this specialization may be removed.
-
-template <typename... Ts>
-struct transform_attribute<std::variant<Ts...>, boost::variant<Ts...>, x3::parser_id>
-{
-    using type = boost::variant<Ts...>;
-    using exposed_type = std::variant<Ts...>;
-
-    static type pre(const exposed_type &ev) { return std::move(type()); }
-
-    static void post(exposed_type &ev, const type &bv)
-    {
-        ev = boost::apply_visitor([](auto &&n) -> exposed_type { return std::move(n); }, bv);
-    }
-};
-
-template <typename... Ts>
-struct transform_attribute<stan::column, boost::variant<Ts...>, x3::parser_id>
-{
-    using type = boost::variant<Ts...>;
-    using exposed_type = stan::column;
-
-    static type pre(const exposed_type &ev) { return stan::default_value<stan::note>; }
-
-    static void post(exposed_type &ev, const type &bv)
-    {
-        ev = stan::column(stan::copy_variant()(bv));
-    }
-};
 
 template <typename... Ts>
 struct transform_attribute<boost::variant<Ts...>, stan::column, x3::parser_id>
