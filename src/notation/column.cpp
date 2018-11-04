@@ -8,38 +8,6 @@
 
 namespace stan {
 
-#if 0
-int operator==(const rest &c1, const rest &c2)
-{
-    return boost::hana::equal(c1, c2);
-}
-
-int operator==(const pitch &c1, const pitch &c2)
-{
-    return boost::hana::equal(c1, c2);
-}
-
-int operator==(const note &c1, const note &c2)
-{
-    return boost::hana::equal(c1, c2);
-}
-
-int operator==(const chord &c1, const chord &c2)
-{
-    return boost::hana::equal(c1, c2);
-}
-
-int operator==(const beam &c1, const beam &c2)
-{
-    return boost::hana::equal(c1, c2);
-}
-
-int operator==(const tuplet &c1, const tuplet &c2)
-{
-    return boost::hana::equal(c1, c2);
-}
-#endif
-
 struct get_duration
 {
     duration operator()(rest const &v) const { return v.m_value; }
