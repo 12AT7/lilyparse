@@ -106,6 +106,8 @@ struct tuplet
     template <typename ElementContainer>
     static value scale(int num, int den, ElementContainer const &elements);
 
+    operator duration() const { return m_value; }
+
   private:
     void validate() const;
 };

@@ -95,6 +95,12 @@ mettle::suite<> tuplet_suite("tuplet", [](auto &_) {
     });
 
     property(_, "generate", [](tuplet v) {
-        std::cout << "tuplet: " << debug(v) << std::endl;
+        stan::duration d = v; // Invoke cast operator
+        expect(d, mettle::greater(duration::zero()));
+    });
+
+    _.test("invalid", []() {
+        expect([] { tuplet::scale(3, 7, value::quarter()); },
+               thrown<stan::invalid_tuplet>());
     });
 });
