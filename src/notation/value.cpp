@@ -80,11 +80,9 @@ value::operator duration() const
         }
     };
 
-    auto it = duration_table.find(*this);
-    if (it == duration_table.end()) {
-        throw invalid_value("unknown duration of {}", debug(*this));
-    }
-    return it->second;
+    // duration_table contains every possible note value, so this lookup can
+    // never fail.
+    return duration_table.at(*this);
 }
 
 value::dots_t value::dots() const
