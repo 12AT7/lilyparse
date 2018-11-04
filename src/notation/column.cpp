@@ -58,11 +58,6 @@ column copy_variant::operator()(const tuplet &v) const
     return tuplet{ v.m_value, elements };
 }
 
-column copy_variant::operator()(const column &v) const
-{
-    return std::visit(*this, v);
-}
-
 template column copy_variant::operator()<rest>(const rest &) const;
 template column copy_variant::operator()<note>(const note &) const;
 template column copy_variant::operator()<chord>(const chord &) const;

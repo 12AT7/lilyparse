@@ -144,7 +144,6 @@ struct copy_variant
 
     column operator()(const tuplet &v) const;
     column operator()(const beam &v) const;
-    column operator()(const column &v) const;
 
     template <typename... Ts>
     column operator()(const boost::variant<Ts...> &v) const;
