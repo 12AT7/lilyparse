@@ -1,6 +1,7 @@
 #include <stan/driver/lilypond.hpp>
 #include <stan/driver/debug.hpp>
 #include <stan/duration.hpp>
+#include <stan/copy.hpp>
 
 // #define BOOST_SPIRIT_X3_DEBUG
 #include <boost/spirit/home/x3.hpp>
@@ -22,6 +23,9 @@ namespace stan {
 // So default_ctor<T> is just a class T with a default constructor defined.
 // Specializations of default_value<T> follow, which actually define what the
 // default constructor should instantiate.
+
+template <typename T>
+auto default_value = T{};
 
 template <typename T>
 struct default_ctor : T
@@ -266,7 +270,7 @@ struct construct<stan::column>
     void operator()(Context &ctx)
     {
         typename std_variant_to_boost<stan::column>::type v = x3::_attr(ctx);
-        x3::_val(ctx) = stan::column(stan::copy_variant()(v));
+        x3::_val(ctx) = stan::column(stan::copy(v));
     }
 };
 

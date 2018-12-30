@@ -29,40 +29,6 @@ duration operator+(stan::duration const &d, stan::column const &c)
     return d + std::visit(get_duration(), c);
 }
 
-#if 1
-template <typename T>
-column copy_variant::operator()(const T &v) const
-{
-    return v;
-}
-
-column copy_variant::operator()(const beam &v) const
-{
-    std::vector<column> elements;
-    std::transform(
-        v.m_elements.begin(),
-        v.m_elements.end(),
-        std::back_inserter(elements),
-        [this](const column &c) { return column(std::visit(*this, c)); });
-    return beam{ elements };
-}
-
-column copy_variant::operator()(const tuplet &v) const
-{
-    std::vector<column> elements;
-    std::transform(
-        v.m_elements.begin(),
-        v.m_elements.end(),
-        std::back_inserter(elements),
-        [this](const column &c) { return column(std::visit(*this, c)); });
-    return tuplet{ v.m_value, elements };
-}
-
-template column copy_variant::operator()<rest>(const rest &) const;
-template column copy_variant::operator()<note>(const note &) const;
-template column copy_variant::operator()<chord>(const chord &) const;
-#endif
-
 value tuplet::scale(int num, int den, const duration &inner)
 {
     stan::duration outer(inner.num() * den, inner.den() * num);

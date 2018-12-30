@@ -8,12 +8,7 @@
 #include <memory>
 #include <numeric>
 
-#include <boost/variant.hpp>
-
 namespace stan {
-
-template <typename T>
-auto default_value = T{};
 
 struct rest;
 struct note;
@@ -152,36 +147,6 @@ struct meter
 };
 
 duration operator+(const duration &d, const column &c);
-
-#if 1
-struct copy_variant
-{
-    template <typename T>
-    column operator()(const T &v) const;
-
-    column operator()(const tuplet &v) const;
-    column operator()(const beam &v) const;
-
-    template <typename... Ts>
-    column operator()(const boost::variant<Ts...> &v) const;
-
-    template <typename... Ts>
-    column operator()(const std::variant<Ts...> &v) const;
-};
-
-template <typename... Ts>
-inline column copy_variant::operator()(const boost::variant<Ts...> &v) const
-{
-    return boost::apply_visitor(*this, v);
-}
-
-template <typename... Ts>
-inline column copy_variant::operator()(const std::variant<Ts...> &v) const
-{
-    return std::visit(*this, v);
-}
-
-#endif
 
 template <typename ElementContainer>
 value tuplet::scale(int num, int den, ElementContainer const &elements)
