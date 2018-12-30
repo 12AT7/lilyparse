@@ -1,13 +1,21 @@
 #pragma once
 
-#include "rational.hpp"
-#include "exception.hpp"
+#include <stan/rational.hpp>
+#include <stan/exception.hpp>
 
 #include <vector>
 
 namespace stan {
 
 struct duration;
+
+struct invalid_value : exception
+{
+    template <typename... Args>
+    invalid_value(const char *format, Args... args) :
+        exception((std::string("invalid value: ") + format).c_str(),
+                  std::forward<Args>(args)...) {}
+};
 
 struct value : rational<std::uint16_t>
 {
