@@ -208,8 +208,12 @@ x3::rule<struct pcolumn, default_ctor<stan::column>> column = "column";
 // Define semantic actions separately, because C++ reserves [[]] syntax.  The
 // semantic actions count the number of octave ticks, and convert them to a
 // small number that is actually stored in stan::octave.
-auto raise_octave = [](auto &ctx) { _val(ctx) = stan::octave{ 4 + _attr(ctx).size() }; };
-auto lower_octave = [](auto &ctx) { _val(ctx) = stan::octave{ 4 - _attr(ctx).size() }; };
+auto raise_octave = [](auto &ctx) {
+    _val(ctx) = stan::octave{ static_cast<std::uint8_t>(4 + _attr(ctx).size()) };
+};
+auto lower_octave = [](auto &ctx) {
+    _val(ctx) = stan::octave{ static_cast<std::uint8_t>(4 - _attr(ctx).size()) };
+};
 auto default_octave = [](auto &ctx) { _val(ctx) = stan::octave{ 4 }; };
 auto const poctave_def =
     repeat(1, /*(int)stan::octave::max()*/ 7 - 4)[char_(R"(')")][raise_octave] |
