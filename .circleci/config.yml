@@ -41,7 +41,7 @@ jobs:
     environment:
       CXX: g++
       CC: gcc
-      CXXFLAGS: --param ggc-min-expand=0 ggc-min-heapsize=0
+      CXXFLAGS: --param=ggc-min-expand=0 --param=ggc-min-heapsize=0
     docker:
       - image: cadenzio/cpp-build:0.0.3
     <<: *build_steps
