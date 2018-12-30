@@ -53,6 +53,11 @@ std::string to_printable(meter const &ev)
     return write(ev);
 }
 
+std::string to_printable(clef const &ev)
+{
+    return write(ev);
+}
+
 std::string to_printable(column const &ev)
 {
     return write(ev);

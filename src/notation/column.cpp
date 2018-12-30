@@ -22,6 +22,9 @@ struct get_duration
             duration::zero(),
             [](duration res, const auto &p) { return res + p; });
     }
+
+    template <typename C>
+    duration operator()(C const& v) const { return duration::zero(); }
 };
 
 duration operator+(stan::duration const &d, stan::column const &c)

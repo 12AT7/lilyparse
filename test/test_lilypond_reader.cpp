@@ -16,7 +16,9 @@ mettle::suite<
     stan::chord,
     stan::beam,
     stan::tuplet,
-    stan::meter>
+    stan::meter,
+    stan::clef
+    >
     suite(
         "lilypond reader", mettle::type_only, [](auto &_) {
             static stan::lilypond::reader read;

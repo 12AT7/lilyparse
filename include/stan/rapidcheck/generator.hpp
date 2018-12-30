@@ -184,6 +184,24 @@ struct Arbitrary<meter>
 };
 
 template <>
+struct Arbitrary<clef>
+{
+    static Gen<clef> arbitrary()
+    {
+        return gen::construct<clef>(
+		gen::element(
+			clef::type::treble, 
+			clef::type::alto, 
+			clef::type::tenor, 
+			clef::type::bass, 
+			clef::type::percussion
+			)
+		// gen::arbitrary<bool>()
+	);
+    }
+};
+
+template <>
 struct Arbitrary<column>
 {
     static Gen<column> arbitrary()
@@ -193,7 +211,10 @@ struct Arbitrary<column>
             gen::construct<column>(gen::arbitrary<note>()),
             gen::construct<column>(gen::arbitrary<chord>()),
             gen::construct<column>(gen::arbitrary<beam>()),
-            gen::construct<column>(gen::arbitrary<tuplet>()));
+            gen::construct<column>(gen::arbitrary<tuplet>()),
+            gen::construct<column>(gen::arbitrary<meter>()),
+            gen::construct<column>(gen::arbitrary<clef>())
+	    );
     };
 };
 

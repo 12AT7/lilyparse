@@ -89,6 +89,11 @@ const auto default_value<meter> = meter{
 };
 
 template <>
+const auto default_value<clef> = clef { 
+	clef::type::treble
+};
+
+template <>
 const auto default_value<stan::column> = stan::column{
     default_value<stan::note>
 };
@@ -146,6 +151,22 @@ struct pitchclass_ : x3::symbols<stan::pitchclass>
     }
 } pitchclass;
 
+struct clef_ : x3::symbols<stan::clef::type>
+{
+    clef_()
+    {
+    // clang-format off
+	add
+	    ("treble", stan::clef::type::treble)
+	    ("alto", stan::clef::type::alto)
+	    ("tenor", stan::clef::type::tenor)
+	    ("bass", stan::clef::type::bass)
+	    ("percussion", stan::clef::type::percussion)
+	    ;
+    // clang-format on
+    }
+} clef;
+
 struct basevalue_ : x3::symbols<default_ctor<stan::value>>
 {
     basevalue_()
@@ -202,6 +223,7 @@ x3::rule<struct pchord, default_ctor<stan::chord>> pchord = "chord";
 x3::rule<struct pbeam, default_ctor<stan::beam>> pbeam = "beam";
 x3::rule<struct ptuplet, default_ctor<stan::tuplet>> ptuplet = "tuplet";
 x3::rule<struct pmeter, default_ctor<stan::meter>> pmeter = "meter";
+x3::rule<struct pclef, default_ctor<stan::clef>> pclef = "clef";
 x3::rule<struct pcolumn, default_ctor<stan::column>> column = "column";
 
 // x3::rule<struct pmusic, std::shared_ptr<stan::column>> music = "music";
@@ -247,7 +269,7 @@ template <typename T>
 struct construct<T>
 {
     template <typename Context>
-    void operator()(Context &ctx)
+   void operator()(Context &ctx)
     {
         x3::_val(ctx) = T{ x3::_attr(ctx) };
     }
@@ -304,7 +326,9 @@ auto const ptuplet_def =
         [to_tuplet];
 auto const pmeter_def =
     (lit(R"(\time)") >> x3::ushort_ >> '/' >> basevalue)[to_meter];
-auto const column_def = (prest | pnote | pchord | pbeam | ptuplet | pmeter)
+auto const pclef_def =
+    (lit(R"(\clef)") >> clef)[construct<stan::clef>()];
+auto const column_def = (prest | pnote | pchord | pbeam | ptuplet | pmeter | pclef)
     [construct<stan::column>()];
 
 // auto make_shared = [](auto &ctx) { _val = std::make_shared<column>(std::move(_attr(ctx))); };
@@ -321,6 +345,7 @@ BOOST_SPIRIT_DEFINE(pchord)
 BOOST_SPIRIT_DEFINE(pbeam)
 BOOST_SPIRIT_DEFINE(ptuplet)
 BOOST_SPIRIT_DEFINE(pmeter)
+BOOST_SPIRIT_DEFINE(pclef)
 BOOST_SPIRIT_DEFINE(column)
 
 // auto construct_key = [](auto& ctx) {

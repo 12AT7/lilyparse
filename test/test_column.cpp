@@ -12,6 +12,6 @@ mettle::suite<> suite("column", [](auto &_) {
     using namespace stan;
 
     property(_, "duration", [](column v) {
-        expect(duration::zero() + v, mettle::greater(duration::zero()));
+        expect(duration::zero() + v, mettle::greater_equal(duration::zero()));
     });
 });

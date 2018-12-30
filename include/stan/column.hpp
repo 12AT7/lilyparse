@@ -17,8 +17,9 @@ struct chord;
 struct beam;
 struct tuplet;
 struct meter;
+struct clef;
 
-using column = std::variant<rest, note, chord, beam, tuplet, meter>;
+using column = std::variant<rest, note, chord, beam, tuplet, meter, clef>;
 
 duration operator+(const duration &d, const column &c);
 
@@ -30,3 +31,4 @@ duration operator+(const duration &d, const column &c);
 #include <stan/beam.hpp>
 #include <stan/tuplet.hpp>
 #include <stan/meter.hpp>
+#include <stan/clef.hpp>

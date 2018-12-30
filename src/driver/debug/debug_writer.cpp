@@ -92,6 +92,18 @@ std::string writer::operator()(meter const &r) const
     return fmt::format("{}/{}", top, write(r.m_value));
 }
 
+std::string writer::operator()(clef const &c) const
+{
+	static std::map<clef::type, std::string> clefname {
+		{ clef::type::treble, "treble"}, 
+		{ clef::type::alto, "alto"}, 
+		{ clef::type::tenor, "tenor"}, 
+		{ clef::type::bass, "bass"}, 
+	};
+
+	return fmt::format("{} clef", clefname.at(c.m_type));
+}
+
 std::string writer::operator()(std::unique_ptr<column> const &ptr) const
 {
     return operator()(*ptr);

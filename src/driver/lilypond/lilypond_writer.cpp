@@ -127,6 +127,20 @@ std::string writer::operator()<meter>(const meter &m) const
 }
 
 template <>
+std::string writer::operator()<clef>(const clef &c) const
+{
+	static std::map<clef::type, std::string> name {
+		{ clef::type::treble, "treble" },
+		{ clef::type::alto, "alto" },
+		{ clef::type::tenor, "tenor" },
+		{ clef::type::bass, "bass" },
+		{ clef::type::percussion, "percussion" },
+	};
+
+	return fmt::format(R"(\clef {})", name.at(c.m_type));
+}
+
+template <>
 std::string writer::operator()<column>(const column &v) const
 {
     static writer write;

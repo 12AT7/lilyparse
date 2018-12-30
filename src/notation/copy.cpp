@@ -33,5 +33,7 @@ column copy_visitor::operator()(const tuplet &v) const
 template column copy_visitor::operator()<rest>(const rest &) const;
 template column copy_visitor::operator()<note>(const note &) const;
 template column copy_visitor::operator()<chord>(const chord &) const;
+template column copy_visitor::operator()<meter>(const meter &) const;
+template column copy_visitor::operator()<clef>(const clef &) const;
 }
 

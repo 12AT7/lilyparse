@@ -118,4 +118,12 @@ mettle::suite<> lilypond_suite("lilypond writer", [](auto &_) {
         expect(write(meter{ { 2, 3 }, value::eighth() }),
                equal_to(R"(\compoundMeter #'((2 8) (3 8)))"));
     });
+
+    _.test("clef", []() {
+	expect(write(clef{ clef::type::treble }), equal_to(R"(\clef treble)"));
+	expect(write(clef{ clef::type::alto }), equal_to(R"(\clef alto)"));
+	expect(write(clef{ clef::type::tenor }), equal_to(R"(\clef tenor)"));
+	expect(write(clef{ clef::type::bass }), equal_to(R"(\clef bass)"));
+	expect(write(clef{ clef::type::percussion }), equal_to(R"(\clef percussion)"));
+    });
 });
