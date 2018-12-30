@@ -48,6 +48,11 @@ std::string to_printable(tuplet const &ev)
     return write(ev);
 }
 
+std::string to_printable(meter const &ev)
+{
+    return write(ev);
+}
+
 std::string to_printable(column const &ev)
 {
     return write(ev);

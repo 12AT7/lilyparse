@@ -15,6 +15,8 @@ using mettle::regex_match;
 
 mettle::suite<> lilypond_suite("lilypond writer", [](auto &_) {
     static stan::lilypond::writer write;
+    using namespace stan;
+
     _.test("octave", []() {
         using stan::octave;
 
@@ -103,5 +105,17 @@ mettle::suite<> lilypond_suite("lilypond writer", [](auto &_) {
         // Correctness will be further checked in test_lilypond_reader, where
         // the test knows the correct answer.
         expect(write(n), equal_to(write(n.m_pitch) + write(n.m_value)));
+    });
+
+    _.test("meter", []() {
+        expect(write(meter{ { 2 }, value::quarter() }), equal_to(R"(\time 2/4)"));
+        expect(write(meter{ { 3 }, value::quarter() }), equal_to(R"(\time 3/4)"));
+        expect(write(meter{ { 4 }, value::quarter() }), equal_to(R"(\time 4/4)"));
+        expect(write(meter{ { 3 }, value::eighth() }), equal_to(R"(\time 3/8)"));
+        expect(write(meter{ { 5 }, value::eighth() }), equal_to(R"(\time 5/8)"));
+        expect(write(meter{ { 6 }, value::eighth() }), equal_to(R"(\time 6/8)"));
+        expect(write(meter{ { 7 }, value::eighth() }), equal_to(R"(\time 7/8)"));
+        expect(write(meter{ { 2, 3 }, value::eighth() }),
+               equal_to(R"(\compoundMeter #'((2 8) (3 8)))"));
     });
 });

@@ -8,6 +8,7 @@
 #include <fstream>
 #include <memory>
 #include <numeric>
+#include <iostream>
 
 namespace stan {
 
@@ -75,6 +76,12 @@ const auto default_value<tuplet> = tuplet{
     note{ value::eighth(), default_value<pitch> },
     note{ value::eighth(), default_value<pitch> },
 
+};
+
+template <>
+const auto default_value<meter> = meter{
+    { 4 },
+    value::quarter()
 };
 
 template <>
@@ -190,12 +197,12 @@ x3::rule<struct pnote, default_ctor<stan::note>> pnote = "note";
 x3::rule<struct pchord, default_ctor<stan::chord>> pchord = "chord";
 x3::rule<struct pbeam, default_ctor<stan::beam>> pbeam = "beam";
 x3::rule<struct ptuplet, default_ctor<stan::tuplet>> ptuplet = "tuplet";
+x3::rule<struct pmeter, default_ctor<stan::meter>> pmeter = "meter";
 x3::rule<struct pcolumn, default_ctor<stan::column>> column = "column";
 
 // x3::rule<struct pmusic, std::shared_ptr<stan::column>> music = "music";
 // x3::rule<struct music_list, stan::sequential> music_list = "music_list";
 // x3::rule<struct key, stan::key> key = "key";
-// x3::rule<struct meter, stan::meter> meter = "meter";
 // x3::rule<struct clef, stan::clef> clef = "clef";
 
 // Define semantic actions separately, because C++ reserves [[]] syntax.  The
@@ -265,24 +272,37 @@ auto to_tuplet = [](auto &ctx) {
     x3::_val(ctx) = tuplet{ val, at_c<2>(attr) };
 };
 
+auto to_meter = [](auto &ctx) {
+    auto attr = _attr(ctx);
+    // This works only for simple meter so far
+    x3::_val(ctx) = meter{
+        { static_cast<std::uint8_t>(at_c<0>(attr)) },
+        at_c<1>(attr)
+    };
+};
+
 auto const prest_def = x3::lit('r') >> pvalue[construct<stan::rest>()];
 auto const pnote_def = (ppitch >> pvalue)[construct<stan::note, 1, 0>()];
 auto const ppitch_def = (pitchclass >> poctave)[construct<stan::pitch, 0, 1>()];
 
 auto add_dot = [](auto &ctx) { _val(ctx) = dot(_val(ctx)); };
 
-auto const pvalue_def = basevalue[construct<stan::value>()] >> x3::repeat(0, 2)[lit('.')[add_dot]];
+auto const pvalue_def =
+    basevalue[construct<stan::value>()] >> x3::repeat(0, 2)[lit('.')[add_dot]];
 auto const pchord_def = ('<' >> +ppitch >> '>' >> pvalue)[construct<stan::chord, 1, 0>()];
 auto const pbeam_def = '[' >> (+column)[construct<stan::beam>()] >> ']';
-auto const ptuplet_def = (lit(R"(\tuplet)") >> x3::int_ >> '/' >> x3::int_ >> '{' >> (+column) >> '}')[to_tuplet];
-auto const column_def = (prest | pnote | pchord | pbeam | ptuplet)[construct<stan::column>()];
+auto const ptuplet_def =
+    (lit(R"(\tuplet)") >> x3::int_ >> '/' >> x3::int_ >> '{' >> (+column) >> '}')
+        [to_tuplet];
+auto const pmeter_def =
+    (lit(R"(\time)") >> x3::ushort_ >> '/' >> basevalue)[to_meter];
+auto const column_def = (prest | pnote | pchord | pbeam | ptuplet | pmeter)
+    [construct<stan::column>()];
 
 // auto make_shared = [](auto &ctx) { _val = std::make_shared<column>(std::move(_attr(ctx))); };
 // auto const music_def = column[make_shared];
 // auto const variant_def = note | chord_body | key | meter | clef ;
 // auto const music_list_def = lit('{') >> +variant >> '}';
-
-// BOOST_SPIRIT_DEFINE(pitch, octave, value, note, column) // , chord_body, variant, music_list);
 
 BOOST_SPIRIT_DEFINE(ppitch)
 BOOST_SPIRIT_DEFINE(poctave)
@@ -292,15 +312,14 @@ BOOST_SPIRIT_DEFINE(pnote)
 BOOST_SPIRIT_DEFINE(pchord)
 BOOST_SPIRIT_DEFINE(pbeam)
 BOOST_SPIRIT_DEFINE(ptuplet)
+BOOST_SPIRIT_DEFINE(pmeter)
 BOOST_SPIRIT_DEFINE(column)
-// BOOST_SPIRIT_DEFINE(music)
 
 // auto construct_key = [](auto& ctx) {
 //     // _attr(ctx) = stan::key(stan::pitchclass::d, "minor");
 //     _attr(ctx) = stan::key(boost::fusion::at_c<0>(_val(ctx)), boost::fusion::at_c<1>(_val(ctx)));
 // };
 // auto const key_def = key %= lit("\\key") >> (pitchclass >> mode)[construct_key];
-// auto const meter_def = lit("\\time") >> ushort_ >> '/' >> basevalue;
 // auto const clef_def = lit("\\clef") >> clef_library;
 //
 // BOOST_SPIRIT_DEFINE(key, meter, clef);

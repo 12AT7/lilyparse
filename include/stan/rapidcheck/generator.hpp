@@ -161,6 +161,29 @@ struct Arbitrary<beam>
 };
 
 template <>
+struct Arbitrary<meter>
+{
+    static Gen<meter> arbitrary()
+    {
+        static std::vector<value> m_valid_values{
+            value::half(),
+            value::quarter(),
+            value::eighth(),
+            value::sixteenth(),
+            value::thirtysecond()
+        };
+
+        return gen::construct<meter>(
+            gen::oneOf(
+                gen::container<std::vector<std::uint8_t>>(1, gen::inRange(2, 9))
+                //gen::container<std::vector<std::uint8_t>>(2, gen::inRange(2, 9)),
+                //gen::container<std::vector<std::uint8_t>>(3, gen::inRange(2, 9))
+                ),
+            gen::elementOf(m_valid_values));
+    };
+};
+
+template <>
 struct Arbitrary<column>
 {
     static Gen<column> arbitrary()

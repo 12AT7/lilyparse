@@ -89,6 +89,25 @@ void tuplet::validate() const
     }
 }
 
+void meter::validate() const
+{
+    static std::set<value> valid_values{
+        value::half(),
+        value::quarter(),
+        value::eighth(),
+        value::sixteenth(),
+        value::thirtysecond()
+    };
+
+    if (m_beats.empty()) {
+        throw invalid_meter("no beats");
+    }
+    if (valid_values.count(m_value) == 0) {
+        throw invalid_meter(
+            "value must be half, quarter, eighth, sixteenth, or thirtysecond");
+    }
+}
+
 void beam::validate() const
 {
     struct is_valid

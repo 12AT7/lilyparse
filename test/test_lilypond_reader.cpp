@@ -15,7 +15,8 @@ mettle::suite<
     stan::note,
     stan::chord,
     stan::beam,
-    stan::tuplet>
+    stan::tuplet,
+    stan::meter>
     suite(
         "lilypond reader", mettle::type_only, [](auto &_) {
             static stan::lilypond::reader read;
@@ -26,6 +27,7 @@ mettle::suite<
 
             property(_, "writeread", [](Event n) {
                 std::string lily = write(n);
+                std::cout << lily << std::endl;
                 expect(read(lily), equal_to<stan::column>(stan::column{ n }));
             });
 

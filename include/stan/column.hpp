@@ -20,7 +20,8 @@ struct note;
 struct chord;
 struct beam;
 struct tuplet;
-using column = std::variant<rest, note, chord, beam, tuplet>;
+struct meter;
+using column = std::variant<rest, note, chord, beam, tuplet, meter>;
 
 struct rest
 {
@@ -127,6 +128,22 @@ struct beam
     beam(VoiceElement... element)
     {
         (m_elements.emplace_back(element), ...);
+        validate();
+    }
+
+  private:
+    void validate() const;
+};
+
+struct meter
+{
+    BOOST_HANA_DEFINE_STRUCT(meter,
+                             (std::vector<std::uint8_t>, m_beats),
+                             (value, m_value));
+
+    meter(std::vector<std::uint8_t> beats, value v) :
+        m_beats{ beats }, m_value{ v }
+    {
         validate();
     }
 

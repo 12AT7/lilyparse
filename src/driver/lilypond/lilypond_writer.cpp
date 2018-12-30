@@ -108,6 +108,25 @@ std::string writer::operator()<tuplet>(tuplet const &r) const
 }
 
 template <>
+std::string writer::operator()<meter>(const meter &m) const
+{
+    static writer write;
+    if (m.m_beats.size() == 1) {
+        return fmt::format(R"(\time {}/{})", m.m_beats.front(), m.m_value.den());
+    }
+
+    std::string compound = std::accumulate(
+        m.m_beats.begin(),
+        m.m_beats.end(),
+        std::string(),
+        [v = m.m_value](std::string s, std::uint8_t beats) {
+            return fmt::format("{}({} {}) ", s, beats, v.den());
+        });
+    compound.erase(compound.end() - 1);
+    return fmt::format(R"(\compoundMeter #'({}))", compound);
+}
+
+template <>
 std::string writer::operator()<column>(const column &v) const
 {
     static writer write;

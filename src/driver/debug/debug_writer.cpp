@@ -81,6 +81,17 @@ std::string writer::operator()(tuplet const &r) const
     return fmt::format("{}:{{{}}}]", write(r.m_value), elements);
 }
 
+std::string writer::operator()(meter const &r) const
+{
+    static writer write;
+    std::string top = fmt::format("{}", r.m_beats.front());
+    top = std::accumulate(r.m_beats.begin() + 1, r.m_beats.end(), top,
+                          [](std::string s, std::uint8_t b) {
+                              return fmt::format("{}+{}", s, b);
+                          });
+    return fmt::format("{}/{}", top, write(r.m_value));
+}
+
 std::string writer::operator()(std::unique_ptr<column> const &ptr) const
 {
     return operator()(*ptr);

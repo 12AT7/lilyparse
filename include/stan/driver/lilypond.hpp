@@ -17,7 +17,6 @@ struct writer
 
 struct reader
 {
-    // std::shared_ptr<column> operator()(const std::string &);
     column operator()(const std::string &);
 };
 
