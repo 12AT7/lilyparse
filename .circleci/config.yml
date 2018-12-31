@@ -11,7 +11,7 @@ build_steps: &build_steps
         command: cmake . -DCMAKE_BUILD_TYPE=Release -G Ninja
     - run:
         name: Build
-        command: ninja -j1
+        command: ninja -j2
     - run:
         name: Unit Test
         command: |
