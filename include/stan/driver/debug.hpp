@@ -17,6 +17,7 @@ struct writer
     std::string operator()(tuplet const &) const;
     std::string operator()(meter const &) const;
     std::string operator()(clef const &) const;
+    std::string operator()(key const &) const;
     std::string operator()(column const &) const;
     std::string operator()(std::unique_ptr<column> const &) const;
 

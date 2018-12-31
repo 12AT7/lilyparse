@@ -1,3 +1,4 @@
+#include <mettle.hpp>
 #include <stan/rapidcheck/generator.hpp>
 
 template <typename Builder, typename Testable>

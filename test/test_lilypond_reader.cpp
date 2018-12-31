@@ -2,9 +2,9 @@
 #include <stan/driver/lilypond.hpp>
 #include <stan/driver/debug.hpp>
 #include "to_printable.hpp"
-#include "property.hpp"
 
 #include <mettle.hpp>
+#include "property.hpp"
 
 using mettle::equal_to;
 using mettle::expect;
@@ -17,7 +17,8 @@ mettle::suite<
     stan::beam,
     stan::tuplet,
     stan::meter,
-    stan::clef
+    stan::clef,
+    stan::key
     >
     suite(
         "lilypond reader", mettle::type_only, [](auto &_) {

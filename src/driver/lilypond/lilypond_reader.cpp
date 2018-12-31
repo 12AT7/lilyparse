@@ -94,6 +94,12 @@ const auto default_value<clef> = clef {
 };
 
 template <>
+const auto default_value<key> = key { 
+	pitchclass::c,
+	mode::major
+};
+
+template <>
 const auto default_value<stan::column> = stan::column{
     default_value<stan::note>
 };
@@ -167,6 +173,19 @@ struct clef_ : x3::symbols<stan::clef::type>
     }
 } clef;
 
+struct mode_ : x3::symbols<std::vector<std::uint8_t>>
+{
+    mode_()
+    {
+    // clang-format off
+	add
+	    ("\\major", stan::mode::major)
+	    ("\\minor", stan::mode::minor)
+	    ;
+    // clang-format on
+    }
+} mode;
+
 struct basevalue_ : x3::symbols<default_ctor<stan::value>>
 {
     basevalue_()
@@ -224,6 +243,7 @@ x3::rule<struct pbeam, default_ctor<stan::beam>> pbeam = "beam";
 x3::rule<struct ptuplet, default_ctor<stan::tuplet>> ptuplet = "tuplet";
 x3::rule<struct pmeter, default_ctor<stan::meter>> pmeter = "meter";
 x3::rule<struct pclef, default_ctor<stan::clef>> pclef = "clef";
+x3::rule<struct pkey, default_ctor<stan::key>> pkey = "key";
 x3::rule<struct pcolumn, default_ctor<stan::column>> column = "column";
 
 // x3::rule<struct pmusic, std::shared_ptr<stan::column>> music = "music";
@@ -328,9 +348,10 @@ auto const pmeter_def =
     (lit(R"(\time)") >> x3::ushort_ >> '/' >> basevalue)[to_meter];
 auto const pclef_def =
     (lit(R"(\clef)") >> clef)[construct<stan::clef>()];
-auto const column_def = (prest | pnote | pchord | pbeam | ptuplet | pmeter | pclef)
+auto const pkey_def = 
+    (lit(R"(\key)") >> pitchclass >> mode)[construct<stan::key, 0, 1>()];
+auto const column_def = (prest | pnote | pchord | pbeam | ptuplet | pmeter | pclef | pkey)
     [construct<stan::column>()];
-
 // auto make_shared = [](auto &ctx) { _val = std::make_shared<column>(std::move(_attr(ctx))); };
 // auto const music_def = column[make_shared];
 // auto const variant_def = note | chord_body | key | meter | clef ;
@@ -346,26 +367,8 @@ BOOST_SPIRIT_DEFINE(pbeam)
 BOOST_SPIRIT_DEFINE(ptuplet)
 BOOST_SPIRIT_DEFINE(pmeter)
 BOOST_SPIRIT_DEFINE(pclef)
+BOOST_SPIRIT_DEFINE(pkey)
 BOOST_SPIRIT_DEFINE(column)
-
-// auto construct_key = [](auto& ctx) {
-//     // _attr(ctx) = stan::key(stan::pitchclass::d, "minor");
-//     _attr(ctx) = stan::key(boost::fusion::at_c<0>(_val(ctx)), boost::fusion::at_c<1>(_val(ctx)));
-// };
-// auto const key_def = key %= lit("\\key") >> (pitchclass >> mode)[construct_key];
-// auto const clef_def = lit("\\clef") >> clef_library;
-//
-// BOOST_SPIRIT_DEFINE(key, meter, clef);
-
-// Keep a master list of all defined rules.  This helps Hana metaprograms
-// automatically associate requested attribute types with rules, and explicit
-// template instantiations, reducing boilerplate.
-//auto rules  = hana::make_tuple(
-//       column
-// pitch, octave, value, note
-// chord_body, variant, music_list,
-// key, meter, clef
-// );
 
 stan::column reader::operator()(const std::string &lily)
 {

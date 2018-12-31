@@ -141,6 +141,22 @@ std::string writer::operator()<clef>(const clef &c) const
 }
 
 template <>
+std::string writer::operator()<key>(const key &k) const
+{
+    if (k == key(k.m_tonic, mode::major))
+    {
+	return fmt::format(R"(\key {} \major)", pitchclass_names.at(k.m_tonic));
+    }
+
+    if (k == key(k.m_tonic, mode::minor))
+    {
+	return fmt::format(R"(\key {} \minor)", pitchclass_names.at(k.m_tonic));
+    }
+
+    throw invalid_key("key is neither major nor minor");
+}
+
+template <>
 std::string writer::operator()<column>(const column &v) const
 {
     static writer write;

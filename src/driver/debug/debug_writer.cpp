@@ -104,6 +104,24 @@ std::string writer::operator()(clef const &c) const
 	return fmt::format("{} clef", clefname.at(c.m_type));
 }
 
+std::string writer::operator()(key const &k) const
+{
+    std::string tonic = pitchclass_names.at(k.m_tonic);
+
+    if (k == key(k.m_tonic, mode::major))
+    {
+	return fmt::format(R"({} major)", tonic);
+    }
+
+    if (k == key(k.m_tonic, mode::minor))
+    {
+	return fmt::format(R"({} minor)", tonic);
+    }
+
+    throw invalid_key("key is neither major nor minor");
+}
+
+
 std::string writer::operator()(std::unique_ptr<column> const &ptr) const
 {
     return operator()(*ptr);

@@ -202,6 +202,18 @@ struct Arbitrary<clef>
 };
 
 template <>
+struct Arbitrary<key>
+{
+    static Gen<key> arbitrary()
+    {
+	return gen::construct<key>(
+		gen::arbitrary<pitchclass>(),
+		gen::element(mode::major, mode::minor)
+		);
+    }
+};
+
+template <>
 struct Arbitrary<column>
 {
     static Gen<column> arbitrary()
@@ -213,7 +225,8 @@ struct Arbitrary<column>
             gen::construct<column>(gen::arbitrary<beam>()),
             gen::construct<column>(gen::arbitrary<tuplet>()),
             gen::construct<column>(gen::arbitrary<meter>()),
-            gen::construct<column>(gen::arbitrary<clef>())
+            gen::construct<column>(gen::arbitrary<clef>()),
+            gen::construct<column>(gen::arbitrary<key>())
 	    );
     };
 };
