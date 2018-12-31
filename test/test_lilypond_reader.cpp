@@ -1,4 +1,4 @@
-#include <stan/column.hpp>
+#include <stan/notation.hpp>
 #include <stan/driver/lilypond.hpp>
 #include <stan/driver/debug.hpp>
 #include "to_printable.hpp"

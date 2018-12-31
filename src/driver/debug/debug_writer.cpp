@@ -1,5 +1,5 @@
+#include <stan/notation.hpp>
 #include <stan/driver/debug.hpp>
-#include <stan/duration.hpp>
 
 #include <fmt/format.h>
 #include <numeric>

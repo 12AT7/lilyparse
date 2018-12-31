@@ -1,7 +1,8 @@
+#include <stan/notation.hpp>
+#include <stan/notation/copy.hpp>
+
 #include <stan/driver/lilypond.hpp>
 #include <stan/driver/debug.hpp>
-#include <stan/duration.hpp>
-#include <stan/copy.hpp>
 
 // #define BOOST_SPIRIT_X3_DEBUG
 #include <boost/spirit/home/x3.hpp>

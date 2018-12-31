@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rational.hpp"
+#include <stan/notation/rational.hpp>
 
 namespace stan {
 

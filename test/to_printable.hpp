@@ -1,5 +1,5 @@
+#include <stan/notation.hpp>
 #include <stan/driver/debug.hpp>
-#include <stan/column.hpp>
 
 #include <mettle.hpp>
 

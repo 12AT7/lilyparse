@@ -1,7 +1,8 @@
 #pragma once
 
-#include <stan/column.hpp>
-#include <stan/value.hpp>
+#include <stan/notation/value.hpp>
+
+#include <boost/hana/define_struct.hpp>
 
 namespace stan {
 

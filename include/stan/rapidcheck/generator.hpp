@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stan/pitch.hpp>
-#include <stan/value.hpp>
-#include <stan/column.hpp>
+#include <stan/notation.hpp>
 
 #include <rapidcheck.h>
 #include "rapidcheck/shrinkable/Create.hpp"

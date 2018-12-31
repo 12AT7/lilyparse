@@ -1,4 +1,4 @@
-#include <stan/key.hpp>
+#include <stan/notation.hpp>
 #include "property.hpp"
 #include "to_printable.hpp"
 

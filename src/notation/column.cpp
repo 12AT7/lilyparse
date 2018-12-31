@@ -1,8 +1,8 @@
-#include <stan/column.hpp>
-#include <stan/duration.hpp>
+#include <stan/notation.hpp>
+#include <stan/notation/equal.hpp>
+
 #include <stan/driver/debug.hpp>
 #include <stan/driver/lilypond.hpp>
-#include <stan/equal.hpp>
 
 #include <numeric>
 

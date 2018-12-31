@@ -1,5 +1,5 @@
-#include <stan/duration.hpp>
-#include <stan/value.hpp>
+#include <stan/notation/duration.hpp>
+#include <stan/notation/value.hpp>
 
 namespace stan {
 

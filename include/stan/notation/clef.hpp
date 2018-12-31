@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/hana/define_struct.hpp>
+
 namespace stan {
 
 struct clef

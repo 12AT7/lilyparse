@@ -1,4 +1,4 @@
-#include <stan/column.hpp>
+#include <stan/notation.hpp>
 #include "to_printable.hpp"
 #include "property.hpp"
 

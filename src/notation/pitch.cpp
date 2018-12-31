@@ -1,5 +1,5 @@
+#include <stan/notation.hpp>
 #include <stan/exception.hpp>
-#include <stan/pitch.hpp>
 
 #include <algorithm>
 #include <map>

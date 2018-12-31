@@ -1,5 +1,5 @@
-#include <stan/value.hpp>
-#include <stan/duration.hpp>
+#include <stan/notation/value.hpp>
+#include <stan/notation/duration.hpp>
 #include <stan/driver/debug.hpp>
 
 #include <map>

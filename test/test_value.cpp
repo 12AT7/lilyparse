@@ -1,10 +1,10 @@
+#include <stan/notation.hpp>
+#include <stan/driver/debug.hpp>
+
 #include <mettle.hpp>
+
 #include "to_printable.hpp"
 #include "property.hpp"
-
-#include <stan/value.hpp>
-#include <stan/duration.hpp>
-#include <stan/driver/debug.hpp>
 
 #include <numeric>
 

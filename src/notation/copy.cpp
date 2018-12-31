@@ -1,4 +1,4 @@
-#include <stan/copy.hpp>
+#include <stan/notation/copy.hpp>
 
 namespace stan {
 

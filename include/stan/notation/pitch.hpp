@@ -2,6 +2,7 @@
 
 #include <type_safe/strong_typedef.hpp>
 #include <boost/hana/define_struct.hpp>
+
 #include <set>
 #include <map>
 

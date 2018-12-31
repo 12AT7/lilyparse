@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stan/column.hpp>
+#include <stan/notation.hpp>
 
 #include <boost/variant.hpp>
 

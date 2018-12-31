@@ -1,7 +1,7 @@
-#include <mettle.hpp>
-
-#include <stan/pitch.hpp>
+#include <stan/notation.hpp>
 #include <stan/driver/debug.hpp>
+
+#include <mettle.hpp>
 #include "property.hpp"
 
 using mettle::equal_to;

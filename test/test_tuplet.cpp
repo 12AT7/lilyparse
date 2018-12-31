@@ -1,6 +1,6 @@
-#include <stan/column.hpp>
-#include <stan/duration.hpp>
+#include <stan/notation.hpp>
 #include <stan/driver/lilypond.hpp>
+
 #include "to_printable.hpp"
 #include "property.hpp"
 

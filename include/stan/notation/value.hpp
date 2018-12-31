@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stan/rational.hpp>
+#include <stan/notation/rational.hpp>
 #include <stan/exception.hpp>
 
 #include <vector>

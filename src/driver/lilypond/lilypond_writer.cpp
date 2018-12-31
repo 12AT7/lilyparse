@@ -1,6 +1,7 @@
+#include <stan/notation.hpp>
+
 #include <stan/driver/lilypond.hpp>
 #include <stan/driver/debug.hpp>
-#include <stan/duration.hpp>
 
 #include <numeric>
 
