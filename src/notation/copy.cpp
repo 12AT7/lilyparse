@@ -30,10 +30,13 @@ column copy_visitor::operator()(const tuplet &v) const
     return tuplet{ v.m_value, elements };
 }
 
+// These template instantiations are needed by GCC, but not clang.  Not sure
+// what is going on with that.
 template column copy_visitor::operator()<rest>(const rest &) const;
 template column copy_visitor::operator()<note>(const note &) const;
 template column copy_visitor::operator()<chord>(const chord &) const;
 template column copy_visitor::operator()<meter>(const meter &) const;
 template column copy_visitor::operator()<clef>(const clef &) const;
+template column copy_visitor::operator()<key>(const key &) const;
 }
 
